@@ -27,4 +27,5 @@ const $ = execa({
   await $`git add .`;
   await $`git commit -m ${commitMessage}`;
   await $`git tag -am ${tag} ${tag}`;
+  await $`git push --follow-tags`;
 })();
