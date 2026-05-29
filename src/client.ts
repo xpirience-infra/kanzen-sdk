@@ -3,6 +3,8 @@ import type {
   KanzenClientOptions,
   KanzenAccountPayload,
   KanzenAccountResponse,
+  KanzenLockPayload,
+  KanzenLockResponse,
 } from './types.js'
 
 export class KanzenClient {
@@ -23,7 +25,7 @@ export class KanzenClient {
     const url = `${this.apiUrl}${path}`
     const headers = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.apiKey}`,
+      'x-api-key': this.apiKey,
       ...options.headers,
     }
 
@@ -70,6 +72,36 @@ export class KanzenClient {
   async deleteAccount(id: string): Promise<void> {
     return this.request<void>(`/accounts/${id}`, {
       method: 'DELETE',
+    })
+  }
+
+  /**
+   * Acquire a lock on an entity in Kanzen
+   */
+  async acquireLock(payload: KanzenLockPayload): Promise<KanzenLockResponse> {
+    return this.request<KanzenLockResponse>('/locks', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  }
+
+  /**
+   * Extend a lock on an entity in Kanzen
+   */
+  async extendLock(payload: KanzenLockPayload): Promise<KanzenLockResponse> {
+    return this.request<KanzenLockResponse>('/locks', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  }
+
+  /**
+   * Release a lock on an entity in Kanzen
+   */
+  async releaseLock(payload: KanzenLockPayload): Promise<KanzenLockResponse> {
+    return this.request<KanzenLockResponse>('/locks', {
+      method: 'DELETE',
+      body: JSON.stringify(payload),
     })
   }
 

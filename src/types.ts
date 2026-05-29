@@ -56,3 +56,15 @@ export interface KanzenWebhookPayload {
   timestamp: string
   data: KanzenAccountResponse
 }
+
+export interface KanzenLockPayload {
+  entityType: string
+  entityId: string | number
+  leaseTtl?: number
+}
+
+export interface KanzenLockResponse {
+  success: boolean
+  ttl?: number
+  error?: string
+}

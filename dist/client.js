@@ -21,7 +21,7 @@ class KanzenClient {
         const url = `${this.apiUrl}${path}`;
         const headers = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.apiKey}`,
+            'x-api-key': this.apiKey,
             ...options.headers,
         };
         const response = await fetch(url, {
@@ -61,6 +61,33 @@ class KanzenClient {
     async deleteAccount(id) {
         return this.request(`/accounts/${id}`, {
             method: 'DELETE',
+        });
+    }
+    /**
+     * Acquire a lock on an entity in Kanzen
+     */
+    async acquireLock(payload) {
+        return this.request('/locks', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+    }
+    /**
+     * Extend a lock on an entity in Kanzen
+     */
+    async extendLock(payload) {
+        return this.request('/locks', {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+        });
+    }
+    /**
+     * Release a lock on an entity in Kanzen
+     */
+    async releaseLock(payload) {
+        return this.request('/locks', {
+            method: 'DELETE',
+            body: JSON.stringify(payload),
         });
     }
     /**

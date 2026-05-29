@@ -1,4 +1,4 @@
-import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse } from './types.js';
+import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse } from './types.js';
 export declare class KanzenClient {
     private apiUrl;
     private apiKey;
@@ -20,6 +20,18 @@ export declare class KanzenClient {
      * Delete (soft-delete) an Account in Kanzen
      */
     deleteAccount(id: string): Promise<void>;
+    /**
+     * Acquire a lock on an entity in Kanzen
+     */
+    acquireLock(payload: KanzenLockPayload): Promise<KanzenLockResponse>;
+    /**
+     * Extend a lock on an entity in Kanzen
+     */
+    extendLock(payload: KanzenLockPayload): Promise<KanzenLockResponse>;
+    /**
+     * Release a lock on an entity in Kanzen
+     */
+    releaseLock(payload: KanzenLockPayload): Promise<KanzenLockResponse>;
     /**
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
