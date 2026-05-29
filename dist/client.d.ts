@@ -21,20 +21,6 @@ export declare class KanzenClient {
      */
     deleteAccount(id: string): Promise<void>;
     /**
-     * Batch synchronize accounts (creates or updates)
-     * Kanzen maps local IDs to Kanzen IDs.
-     */
-    batchSyncAccounts(accounts: Array<KanzenAccountPayload & {
-        localId: string;
-    }>): Promise<{
-        results: Array<{
-            localId: string;
-            kanzenId?: string;
-            success: boolean;
-            error?: string;
-        }>;
-    }>;
-    /**
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
     verifyWebhookSignature(rawBody: string, signature: string): boolean;

@@ -73,32 +73,7 @@ export class KanzenClient {
     })
   }
 
-  /**
-   * Batch synchronize accounts (creates or updates)
-   * Kanzen maps local IDs to Kanzen IDs.
-   */
-  async batchSyncAccounts(
-    accounts: Array<KanzenAccountPayload & { localId: string }>
-  ): Promise<{
-    results: Array<{
-      localId: string
-      kanzenId?: string
-      success: boolean
-      error?: string
-    }>
-  }> {
-    return this.request<{
-      results: Array<{
-        localId: string
-        kanzenId?: string
-        success: boolean
-        error?: string
-      }>
-    }>('/accounts/batch', {
-      method: 'POST',
-      body: JSON.stringify({ accounts }),
-    })
-  }
+
 
   /**
    * Verify HMAC-SHA256 signature for incoming webhooks

@@ -64,16 +64,6 @@ class KanzenClient {
         });
     }
     /**
-     * Batch synchronize accounts (creates or updates)
-     * Kanzen maps local IDs to Kanzen IDs.
-     */
-    async batchSyncAccounts(accounts) {
-        return this.request('/accounts/batch', {
-            method: 'POST',
-            body: JSON.stringify({ accounts }),
-        });
-    }
-    /**
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
     verifyWebhookSignature(rawBody, signature) {

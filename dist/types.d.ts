@@ -3,30 +3,45 @@ export interface KanzenClientOptions {
     apiKey: string;
     webhookSecret?: string;
 }
+export interface KanzenAddress {
+    type: string;
+    line1: string;
+    postalCode: string;
+    city: string;
+    country: string;
+    countryCode?: string;
+}
 export interface KanzenAccountPayload {
     name: string;
-    parentId?: string | null;
-    siret?: string | null;
-    telephone?: string | null;
-    address?: string | null;
-    zipCode?: string | null;
-    city?: string | null;
-    country?: string | null;
     notes?: string | null;
-    externalId?: string | null;
+    identificationNumber?: string | null;
+    phone?: string | null;
+    parentId?: string | null;
+    accountType?: string;
+    invoicingType?: boolean;
+    originId?: string | null;
+    addresses?: KanzenAddress[];
+}
+export interface KanzenAddressResponse {
+    id: string;
+    type: string;
+    line1: string;
+    postalCode: string;
+    city: string;
+    country: string;
+    countryCode: string;
 }
 export interface KanzenAccountResponse {
     id: string;
     name: string;
-    parentId: string | null;
-    siret: string | null;
-    telephone: string | null;
-    address: string | null;
-    zipCode: string | null;
-    city: string | null;
-    country: string | null;
     notes: string | null;
-    externalId: string | null;
+    identificationNumber: string | null;
+    phone: string | null;
+    parentId: string | null;
+    accountType: string;
+    invoicingType: boolean;
+    originId: string | null;
+    addresses: KanzenAddressResponse[];
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
