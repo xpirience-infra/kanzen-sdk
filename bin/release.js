@@ -22,6 +22,8 @@ const $ = execa({
   const tag = `v${packageJson.version}`;
   const commitMessage = `chore(release): ${tag}`;
 
+  console.log(commitMessage);
+
   await $`git add .`;
   await $`git commit -m ${commitMessage}`;
   await $`git tag -am ${tag} ${tag}`;
