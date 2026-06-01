@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v1.4.0
+
+[compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.3.0...v1.4.0)
+
+### 🚀 Enhancements
+
+- Add lock method ([a8d9506](https://github.com/xpirience-infra/kanzen-sdk/commit/a8d9506))
+- Add contact method ([3786583](https://github.com/xpirience-infra/kanzen-sdk/commit/3786583))
+
+### ❤️ Contributors
+
+- Tristan SCHWENK <tristan.schwenk@ezyostudio.com>
+
 ## v1.3.0
 
 [compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.1.0...v1.3.0)
