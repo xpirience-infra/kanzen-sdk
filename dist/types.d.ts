@@ -21,6 +21,7 @@ export interface KanzenAccountPayload {
     invoicingType?: boolean;
     originId?: string | null;
     addresses?: KanzenAddress[];
+    accountRelationTypes?: string[];
 }
 export interface KanzenAddressResponse {
     id: string;
@@ -60,4 +61,44 @@ export interface KanzenLockResponse {
     success: boolean;
     ttl?: number;
     error?: string;
+}
+export interface KanzenContactPayload {
+    civilityId?: string | null;
+    lastname?: string | null;
+    firstname?: string | null;
+    accountId?: string | null;
+    emailaddress2?: string | null;
+    phone2?: string | null;
+    contactRelationType?: string | null;
+    mainCommunicationLanguage?: string | null;
+    accounts?: {
+        id: string;
+        relationType?: string;
+    }[];
+    additionalFields?: {
+        jobtitle?: string | null;
+        emailaddress1?: string | null;
+        phone1?: string | null;
+        accountId?: string | null;
+    };
+}
+export interface KanzenContactResponse {
+    id: string;
+    civilityId: string | null;
+    lastname: string;
+    firstname: string;
+    emailaddress2: string | null;
+    phone2: string | null;
+    mainCommunicationLanguage: string | null;
+    accounts: {
+        id: string;
+        name: string;
+        $extras?: {
+            pivot_contact_relation_type_id?: string;
+            pivot_contact_relation_type_name?: string;
+        };
+    }[];
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }

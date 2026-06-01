@@ -5,6 +5,8 @@ import type {
   KanzenAccountResponse,
   KanzenLockPayload,
   KanzenLockResponse,
+  KanzenContactPayload,
+  KanzenContactResponse,
 } from './types.js'
 
 export class KanzenClient {
@@ -105,7 +107,53 @@ export class KanzenClient {
     })
   }
 
+  /**
+   * Get a Contact from Kanzen
+   */
+  async getContact(id: string): Promise<KanzenContactResponse> {
+    return this.request<KanzenContactResponse>(`/contacts/${id}`, {
+      method: 'GET',
+    })
+  }
 
+  /**
+   * Create a Contact in Kanzen
+   */
+  async createContact(payload: KanzenContactPayload): Promise<KanzenContactResponse> {
+    return this.request<KanzenContactResponse>('/contacts', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  }
+
+  /**
+   * Update an existing Contact in Kanzen
+   */
+  async updateContact(id: string, payload: KanzenContactPayload): Promise<KanzenContactResponse> {
+    return this.request<KanzenContactResponse>(`/contacts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  }
+
+  /**
+   * Delete a Contact in Kanzen
+   */
+  async deleteContact(id: string): Promise<void> {
+    return this.request<void>(`/contacts/${id}`, {
+      method: 'DELETE',
+    })
+  }
+
+  /**
+   * Detach a Contact from an Account in Kanzen
+   */
+  async detachContact(id: string, accountId: string): Promise<void> {
+    return this.request<void>(`/contacts/${id}/detach`, {
+      method: 'DELETE',
+      body: JSON.stringify({ accountId }),
+    })
+  }
 
   /**
    * Verify HMAC-SHA256 signature for incoming webhooks

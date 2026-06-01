@@ -91,6 +91,49 @@ class KanzenClient {
         });
     }
     /**
+     * Get a Contact from Kanzen
+     */
+    async getContact(id) {
+        return this.request(`/contacts/${id}`, {
+            method: 'GET',
+        });
+    }
+    /**
+     * Create a Contact in Kanzen
+     */
+    async createContact(payload) {
+        return this.request('/contacts', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+    }
+    /**
+     * Update an existing Contact in Kanzen
+     */
+    async updateContact(id, payload) {
+        return this.request(`/contacts/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+        });
+    }
+    /**
+     * Delete a Contact in Kanzen
+     */
+    async deleteContact(id) {
+        return this.request(`/contacts/${id}`, {
+            method: 'DELETE',
+        });
+    }
+    /**
+     * Detach a Contact from an Account in Kanzen
+     */
+    async detachContact(id, accountId) {
+        return this.request(`/contacts/${id}/detach`, {
+            method: 'DELETE',
+            body: JSON.stringify({ accountId }),
+        });
+    }
+    /**
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
     verifyWebhookSignature(rawBody, signature) {

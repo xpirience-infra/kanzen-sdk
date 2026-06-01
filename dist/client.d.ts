@@ -1,4 +1,4 @@
-import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse } from './types.js';
+import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse } from './types.js';
 export declare class KanzenClient {
     private apiUrl;
     private apiKey;
@@ -32,6 +32,26 @@ export declare class KanzenClient {
      * Release a lock on an entity in Kanzen
      */
     releaseLock(payload: KanzenLockPayload): Promise<KanzenLockResponse>;
+    /**
+     * Get a Contact from Kanzen
+     */
+    getContact(id: string): Promise<KanzenContactResponse>;
+    /**
+     * Create a Contact in Kanzen
+     */
+    createContact(payload: KanzenContactPayload): Promise<KanzenContactResponse>;
+    /**
+     * Update an existing Contact in Kanzen
+     */
+    updateContact(id: string, payload: KanzenContactPayload): Promise<KanzenContactResponse>;
+    /**
+     * Delete a Contact in Kanzen
+     */
+    deleteContact(id: string): Promise<void>;
+    /**
+     * Detach a Contact from an Account in Kanzen
+     */
+    detachContact(id: string, accountId: string): Promise<void>;
     /**
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
