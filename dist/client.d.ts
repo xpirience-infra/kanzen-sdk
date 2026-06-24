@@ -1,4 +1,4 @@
-import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse } from './types.js';
+import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse } from "./types.js";
 export declare class KanzenClient {
     private apiUrl;
     private apiKey;
@@ -56,4 +56,8 @@ export declare class KanzenClient {
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
     verifyWebhookSignature(rawBody: string, signature: string): boolean;
+    /**
+     * Decodes and verifies a JWT SSO token issued by KANZen using RS256 JWKS
+     */
+    verifySsoToken(token: string, expectedAudience: string): Promise<any>;
 }
