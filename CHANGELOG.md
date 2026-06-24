@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.5.0
+
+[compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.4.0...v1.5.0)
+
+### 🚀 Enhancements
+
+- **client:** Add verifySsoToken ([742470d](https://github.com/xpirience-infra/kanzen-sdk/commit/742470d))
+
+### ❤️ Contributors
+
+- Tristan SCHWENK <tristan.schwenk@ezyostudio.com>
+
 ## v1.4.0
 
 [compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.3.0...v1.4.0)
