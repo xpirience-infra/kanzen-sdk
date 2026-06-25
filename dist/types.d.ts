@@ -1,7 +1,10 @@
+export type KanzenDebugLevel = 'none' | 'info' | 'verbose' | 'trace';
 export interface KanzenClientOptions {
     apiUrl: string;
     apiKey: string;
     webhookSecret?: string;
+    debug?: boolean | KanzenDebugLevel;
+    logger?: (level: 'info' | 'verbose' | 'trace', message: string, meta?: any) => void;
 }
 export interface KanzenAddress {
     type: string;

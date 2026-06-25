@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import type {
   KanzenClientOptions,
+  KanzenDebugLevel,
   KanzenAccountPayload,
   KanzenAccountResponse,
   KanzenLockPayload,
@@ -13,11 +14,36 @@ export class KanzenClient {
   private apiUrl: string;
   private apiKey: string;
   private webhookSecret?: string;
+  private debugLevel: KanzenDebugLevel = "none";
+  private logger: (level: "info" | "verbose" | "trace", message: string, meta?: any) => void;
 
   constructor(options: KanzenClientOptions) {
     this.apiUrl = options.apiUrl.replace(/\/$/, "");
     this.apiKey = options.apiKey;
     this.webhookSecret = options.webhookSecret;
+    this.debugLevel = options.debug === true ? "verbose" : (options.debug || "none");
+    this.logger = options.logger || ((level, message, meta) => {
+      const prefix = `[kanzen-sdk] [${level.toUpperCase()}]`;
+      if (meta !== undefined) {
+        console.log(prefix, message, meta);
+      } else {
+        console.log(prefix, message);
+      }
+    });
+
+    this.log("info", "Client initialized", { apiUrl: this.apiUrl });
+  }
+
+  private log(level: "info" | "verbose" | "trace", message: string, meta?: any) {
+    if (this.debugLevel === "none") return;
+
+    const levels: Record<KanzenDebugLevel, number> = { none: 0, info: 1, verbose: 2, trace: 3 };
+    const currentWeight = levels[this.debugLevel];
+    const messageWeight = levels[level];
+
+    if (messageWeight <= currentWeight) {
+      this.logger(level, message, meta);
+    }
   }
 
   /**
@@ -34,21 +60,44 @@ export class KanzenClient {
       ...options.headers,
     };
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
+    const method = options.method || "GET";
+    this.log("info", `Request start: ${method} ${path}`);
+    this.log("verbose", `Request headers & body metadata`, { headers, bodyLength: options.body ? String(options.body).length : 0 });
+    this.log("trace", `Request body payload`, { body: options.body });
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers,
+      });
+    } catch (e: any) {
+      this.log("info", `Request failed: ${method} ${path} - Error: ${e.message}`);
+      throw e;
+    }
+
+    this.log("info", `Response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "Unknown error");
+      this.log("verbose", `Response error body`, { body: errorText });
       throw new Error(`Kanzen API Error (${response.status}): ${errorText}`);
     }
 
     if (response.status === 204) {
+      this.log("verbose", `Response body: (204 No Content)`);
       return null as T;
     }
 
-    return response.json() as Promise<T>;
+    const responseText = await response.text();
+    this.log("verbose", `Response body size: ${responseText.length} bytes`);
+    this.log("trace", `Response body payload`, { body: responseText });
+
+    try {
+      return JSON.parse(responseText) as T;
+    } catch (e: any) {
+      throw new Error(`Failed to parse JSON response: ${e.message}`);
+    }
   }
 
   /**
@@ -197,12 +246,16 @@ export class KanzenClient {
    * Decodes and verifies a JWT SSO token issued by KANZen using RS256 JWKS
    */
   async verifySsoToken(token: string, expectedAudience: string): Promise<any> {
+    this.log("info", "SSO token verification initiated", { expectedAudience });
+
     if (!token || typeof token !== "string") {
+      this.log("info", "SSO verification failed: Invalid token format");
       throw new Error("Invalid token format");
     }
 
     const parts = token.split(".");
     if (parts.length !== 3) {
+      this.log("info", "SSO verification failed: Invalid JWT format");
       throw new Error("Invalid JWT format");
     }
 
@@ -212,40 +265,50 @@ export class KanzenClient {
     let header: any;
     try {
       header = JSON.parse(Buffer.from(headerB64, "base64url").toString("utf8"));
+      this.log("trace", "Decoded JWT header", { header });
     } catch (e: any) {
+      this.log("info", `SSO verification failed: Failed to parse JWT header - ${e.message}`);
       throw new Error(`Failed to parse JWT header: ${e.message}`);
     }
 
     const kid = header.kid;
     if (!kid) {
+      this.log("info", "SSO verification failed: JWT header missing Key ID (kid)");
       throw new Error("JWT header is missing key ID (kid)");
     }
 
     // 2. Fetch JWKS public key from KANZen instance
     let jwks: any;
     try {
+      this.log("verbose", `Fetching JWKS to locate kid: ${kid}`);
       jwks = await this.request<any>("/integrations/privateApplications/jwks", {
         method: "POST",
       });
+      this.log("trace", "Fetched JWKS keys", { keys: jwks?.keys });
     } catch (e: any) {
+      this.log("info", `SSO verification failed: Failed to retrieve JWKS - ${e.message}`);
       throw new Error(`Failed to retrieve JWKS from KANZen: ${e.message}`);
     }
 
     if (!jwks?.keys || !Array.isArray(jwks.keys)) {
+      this.log("info", "SSO verification failed: Invalid JWKS response structure");
       throw new Error("Invalid JWKS response from KANZen");
     }
 
     const keyObj = jwks.keys.find((k: any) => k.kid === kid);
     if (!keyObj || !keyObj.pem) {
+      this.log("info", `SSO verification failed: Public key for kid "${kid}" not found in JWKS`);
       throw new Error(`Public key for kid "${kid}" not found in JWKS`);
     }
 
     const publicKey = keyObj.pem;
+    this.log("trace", `Matching JWK PEM found`, { kid, pem: publicKey });
 
     // 3. Verify signature using RS256
     const verifyInput = `${headerB64}.${payloadB64}`;
     const signature = Buffer.from(signatureB64, "base64url");
 
+    this.log("trace", "Verifying signature via crypto.verify");
     const isValid = crypto.verify(
       "SHA256",
       Buffer.from(verifyInput),
@@ -254,6 +317,7 @@ export class KanzenClient {
     );
 
     if (!isValid) {
+      this.log("info", "SSO verification failed: Invalid JWT signature");
       throw new Error("Invalid JWT signature");
     }
 
@@ -263,26 +327,32 @@ export class KanzenClient {
       payload = JSON.parse(
         Buffer.from(payloadB64, "base64url").toString("utf8"),
       );
+      this.log("trace", "Decoded JWT payload", { payload });
     } catch (e: any) {
+      this.log("info", `SSO verification failed: Failed to parse JWT payload - ${e.message}`);
       throw new Error(`Failed to parse JWT payload: ${e.message}`);
     }
 
     const now = Math.floor(Date.now() / 1000);
 
     if (payload.exp && now > payload.exp) {
+      this.log("info", `SSO verification failed: Token expired (exp: ${payload.exp}, current: ${now})`);
       throw new Error("JWT token is expired");
     }
 
     if (payload.iss !== "kanzen-sso") {
+      this.log("info", `SSO verification failed: Issuer mismatch (iss: ${payload.iss}, expected: kanzen-sso)`);
       throw new Error(`Invalid token issuer: ${payload.iss}`);
     }
 
     if (expectedAudience && payload.aud !== expectedAudience) {
+      this.log("info", `SSO verification failed: Audience mismatch (aud: ${payload.aud}, expected: ${expectedAudience})`);
       throw new Error(
         `Audience mismatch: expected "${expectedAudience}", got "${payload.aud}"`,
       );
     }
 
+    this.log("verbose", "SSO token verification succeeded", { iss: payload.iss, aud: payload.aud, email: payload.email });
     return payload;
   }
 }

@@ -3,7 +3,10 @@ export declare class KanzenClient {
     private apiUrl;
     private apiKey;
     private webhookSecret?;
+    private debugLevel;
+    private logger;
     constructor(options: KanzenClientOptions);
+    private log;
     /**
      * Helper to make authenticated HTTP requests to Kanzen API
      */
