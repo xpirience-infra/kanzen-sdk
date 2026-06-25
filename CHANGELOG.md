@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.6.0
+
+[compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.5.0...v1.6.0)
+
+### 🚀 Enhancements
+
+- Add logger ([a7c37bd](https://github.com/xpirience-infra/kanzen-sdk/commit/a7c37bd))
+
+### ❤️ Contributors
+
+- Tristan SCHWENK <tristan.schwenk@ezyostudio.com>
+
 ## v1.5.0
 
 [compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.4.0...v1.5.0)
