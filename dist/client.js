@@ -1,10 +1,14 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KanzenClient = void 0;
-const node_crypto_1 = __importDefault(require("node:crypto"));
+exports.KanzenClient = exports.getNextAuthProviderConfig = exports.getBetterAuthProviderConfig = void 0;
+const utils_js_1 = require("./features/utils.js");
+const accounts_js_1 = require("./features/accounts.js");
+const locks_js_1 = require("./features/locks.js");
+const contacts_js_1 = require("./features/contacts.js");
+const webhook_js_1 = require("./features/webhook.js");
+const auth_js_1 = require("./features/auth.js");
+Object.defineProperty(exports, "getBetterAuthProviderConfig", { enumerable: true, get: function () { return auth_js_1.getBetterAuthProviderConfig; } });
+Object.defineProperty(exports, "getNextAuthProviderConfig", { enumerable: true, get: function () { return auth_js_1.getNextAuthProviderConfig; } });
 class KanzenClient {
     apiUrl;
     apiKey;
@@ -12,7 +16,7 @@ class KanzenClient {
     debugLevel = "none";
     logger;
     constructor(options) {
-        this.apiUrl = options.apiUrl.replace(/\/$/, "");
+        this.apiUrl = (0, utils_js_1.sanitizeApiUrl)(options.apiUrl);
         this.apiKey = options.apiKey;
         this.webhookSecret = options.webhookSecret;
         this.debugLevel = options.debug === true ? "verbose" : (options.debug || "none");
@@ -27,6 +31,24 @@ class KanzenClient {
         });
         this.log("info", "Client initialized", { apiUrl: this.apiUrl });
     }
+    /**
+     * Returns the API URL.
+     * @internal
+     */
+    getApiUrl() {
+        return this.apiUrl;
+    }
+    /**
+     * Returns the configured webhook secret.
+     * @internal
+     */
+    getWebhookSecret() {
+        return this.webhookSecret;
+    }
+    /**
+     * Logs a message with context according to debug levels.
+     * @internal
+     */
     log(level, message, meta) {
         if (this.debugLevel === "none")
             return;
@@ -39,6 +61,7 @@ class KanzenClient {
     }
     /**
      * Helper to make authenticated HTTP requests to Kanzen API
+     * @internal
      */
     async request(path, options = {}) {
         const url = `${this.apiUrl}${path}`;
@@ -86,202 +109,85 @@ class KanzenClient {
      * Create a single Account (Client, Group, or Site) in Kanzen
      */
     async createAccount(payload) {
-        return this.request("/accounts", {
-            method: "POST",
-            body: JSON.stringify(payload),
-        });
+        return (0, accounts_js_1.createAccount)(this, payload);
     }
     /**
      * Update an existing Account in Kanzen
      */
     async updateAccount(id, payload) {
-        return this.request(`/accounts/${id}`, {
-            method: "PUT",
-            body: JSON.stringify(payload),
-        });
+        return (0, accounts_js_1.updateAccount)(this, id, payload);
     }
     /**
      * Delete (soft-delete) an Account in Kanzen
      */
     async deleteAccount(id) {
-        return this.request(`/accounts/${id}`, {
-            method: "DELETE",
-        });
+        return (0, accounts_js_1.deleteAccount)(this, id);
     }
     /**
      * Acquire a lock on an entity in Kanzen
      */
     async acquireLock(payload) {
-        return this.request("/locks", {
-            method: "POST",
-            body: JSON.stringify(payload),
-        });
+        return (0, locks_js_1.acquireLock)(this, payload);
     }
     /**
      * Extend a lock on an entity in Kanzen
      */
     async extendLock(payload) {
-        return this.request("/locks", {
-            method: "PUT",
-            body: JSON.stringify(payload),
-        });
+        return (0, locks_js_1.extendLock)(this, payload);
     }
     /**
      * Release a lock on an entity in Kanzen
      */
     async releaseLock(payload) {
-        return this.request("/locks", {
-            method: "DELETE",
-            body: JSON.stringify(payload),
-        });
+        return (0, locks_js_1.releaseLock)(this, payload);
     }
     /**
      * Get a Contact from Kanzen
      */
     async getContact(id) {
-        return this.request(`/contacts/${id}`, {
-            method: "GET",
-        });
+        return (0, contacts_js_1.getContact)(this, id);
     }
     /**
      * Create a Contact in Kanzen
      */
     async createContact(payload) {
-        return this.request("/contacts", {
-            method: "POST",
-            body: JSON.stringify(payload),
-        });
+        return (0, contacts_js_1.createContact)(this, payload);
     }
     /**
      * Update an existing Contact in Kanzen
      */
     async updateContact(id, payload) {
-        return this.request(`/contacts/${id}`, {
-            method: "PUT",
-            body: JSON.stringify(payload),
-        });
+        return (0, contacts_js_1.updateContact)(this, id, payload);
     }
     /**
      * Delete a Contact in Kanzen
      */
     async deleteContact(id) {
-        return this.request(`/contacts/${id}`, {
-            method: "DELETE",
-        });
+        return (0, contacts_js_1.deleteContact)(this, id);
     }
     /**
      * Detach a Contact from an Account in Kanzen
      */
     async detachContact(id, accountId) {
-        return this.request(`/contacts/${id}/detach`, {
-            method: "DELETE",
-            body: JSON.stringify({ accountId }),
-        });
+        return (0, contacts_js_1.detachContact)(this, id, accountId);
     }
     /**
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
     verifyWebhookSignature(rawBody, signature) {
-        if (!this.webhookSecret) {
-            throw new Error("Webhook secret is not configured in KanzenClient options");
-        }
-        const computedSignature = node_crypto_1.default
-            .createHmac("sha256", this.webhookSecret)
-            .update(rawBody)
-            .digest("hex");
-        if (computedSignature.length !== signature.length) {
-            return false;
-        }
-        return node_crypto_1.default.timingSafeEqual(Buffer.from(computedSignature, "utf-8"), Buffer.from(signature, "utf-8"));
+        return (0, webhook_js_1.verifyWebhookSignature)(this, rawBody, signature);
     }
     /**
-     * Decodes and verifies a JWT SSO token issued by KANZen using RS256 JWKS
+     * Generates the URL to redirect users to in order to start the OAuth flow.
      */
-    async verifySsoToken(token, expectedAudience) {
-        this.log("info", "SSO token verification initiated", { expectedAudience });
-        if (!token || typeof token !== "string") {
-            this.log("info", "SSO verification failed: Invalid token format");
-            throw new Error("Invalid token format");
-        }
-        const parts = token.split(".");
-        if (parts.length !== 3) {
-            this.log("info", "SSO verification failed: Invalid JWT format");
-            throw new Error("Invalid JWT format");
-        }
-        const [headerB64, payloadB64, signatureB64] = parts;
-        // 1. Decode header to find Key ID (kid)
-        let header;
-        try {
-            header = JSON.parse(Buffer.from(headerB64, "base64url").toString("utf8"));
-            this.log("trace", "Decoded JWT header", { header });
-        }
-        catch (e) {
-            this.log("info", `SSO verification failed: Failed to parse JWT header - ${e.message}`);
-            throw new Error(`Failed to parse JWT header: ${e.message}`);
-        }
-        const kid = header.kid;
-        if (!kid) {
-            this.log("info", "SSO verification failed: JWT header missing Key ID (kid)");
-            throw new Error("JWT header is missing key ID (kid)");
-        }
-        // 2. Fetch JWKS public key from KANZen instance
-        let jwks;
-        try {
-            this.log("verbose", `Fetching JWKS to locate kid: ${kid}`);
-            jwks = await this.request("/integrations/privateApplications/jwks", {
-                method: "POST",
-            });
-            this.log("trace", "Fetched JWKS keys", { keys: jwks?.keys });
-        }
-        catch (e) {
-            this.log("info", `SSO verification failed: Failed to retrieve JWKS - ${e.message}`);
-            throw new Error(`Failed to retrieve JWKS from KANZen: ${e.message}`);
-        }
-        if (!jwks?.keys || !Array.isArray(jwks.keys)) {
-            this.log("info", "SSO verification failed: Invalid JWKS response structure");
-            throw new Error("Invalid JWKS response from KANZen");
-        }
-        const keyObj = jwks.keys.find((k) => k.kid === kid);
-        if (!keyObj || !keyObj.pem) {
-            this.log("info", `SSO verification failed: Public key for kid "${kid}" not found in JWKS`);
-            throw new Error(`Public key for kid "${kid}" not found in JWKS`);
-        }
-        const publicKey = keyObj.pem;
-        this.log("trace", `Matching JWK PEM found`, { kid, pem: publicKey });
-        // 3. Verify signature using RS256
-        const verifyInput = `${headerB64}.${payloadB64}`;
-        const signature = Buffer.from(signatureB64, "base64url");
-        this.log("trace", "Verifying signature via crypto.verify");
-        const isValid = node_crypto_1.default.verify("SHA256", Buffer.from(verifyInput), publicKey, signature);
-        if (!isValid) {
-            this.log("info", "SSO verification failed: Invalid JWT signature");
-            throw new Error("Invalid JWT signature");
-        }
-        // 4. Decode and check claims
-        let payload;
-        try {
-            payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8"));
-            this.log("trace", "Decoded JWT payload", { payload });
-        }
-        catch (e) {
-            this.log("info", `SSO verification failed: Failed to parse JWT payload - ${e.message}`);
-            throw new Error(`Failed to parse JWT payload: ${e.message}`);
-        }
-        const now = Math.floor(Date.now() / 1000);
-        if (payload.exp && now > payload.exp) {
-            this.log("info", `SSO verification failed: Token expired (exp: ${payload.exp}, current: ${now})`);
-            throw new Error("JWT token is expired");
-        }
-        if (payload.iss !== "kanzen-sso") {
-            this.log("info", `SSO verification failed: Issuer mismatch (iss: ${payload.iss}, expected: kanzen-sso)`);
-            throw new Error(`Invalid token issuer: ${payload.iss}`);
-        }
-        if (expectedAudience && payload.aud !== expectedAudience) {
-            this.log("info", `SSO verification failed: Audience mismatch (aud: ${payload.aud}, expected: ${expectedAudience})`);
-            throw new Error(`Audience mismatch: expected "${expectedAudience}", got "${payload.aud}"`);
-        }
-        this.log("verbose", "SSO token verification succeeded", { iss: payload.iss, aud: payload.aud, email: payload.email });
-        return payload;
+    getOAuthAuthorizationUrl(params) {
+        return (0, auth_js_1.getOAuthAuthorizationUrl)(this, params);
+    }
+    /**
+     * Exchanges the code received in the redirect callback for the user's profile.
+     */
+    async exchangeOAuthCodeForProfile(params) {
+        return (0, auth_js_1.exchangeOAuthCodeForProfile)(this, params);
     }
 }
 exports.KanzenClient = KanzenClient;

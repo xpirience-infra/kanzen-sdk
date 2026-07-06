@@ -1,2 +1,2 @@
-export { KanzenClient } from './client.js'
+export { KanzenClient, getBetterAuthProviderConfig, getNextAuthProviderConfig } from './client.js'
 export * from './types.js'

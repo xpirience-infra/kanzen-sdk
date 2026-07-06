@@ -105,3 +105,31 @@ export interface KanzenContactResponse {
     updatedAt: string;
     deletedAt: string | null;
 }
+export interface KanzenOAuthConfigOptions {
+    /** Base URL of the KANZen API (e.g., 'https://kanzen.mycompany.com') */
+    apiUrl: string;
+    /** OAuth Client ID */
+    clientId: string;
+    /** OAuth Client Secret (Optional for public/PKCE clients) */
+    clientSecret?: string;
+    /** Requested scopes (defaults to ['openid', 'profile', 'email']) */
+    scopes?: string[];
+}
+export interface NextAuthCustomProviderConfig {
+    id: string;
+    name: string;
+    type: 'oauth';
+    authorization: string;
+    token: string;
+    userinfo: string;
+    profile: (profile: any) => {
+        id: string;
+        name: string;
+        email: string;
+        image: string;
+        roles: string[];
+        groups: string[];
+    };
+    clientId: string;
+    clientSecret?: string;
+}

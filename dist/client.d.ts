@@ -1,4 +1,6 @@
+import { getBetterAuthProviderConfig, getNextAuthProviderConfig } from "./features/auth.js";
 import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse } from "./types.js";
+export { getBetterAuthProviderConfig, getNextAuthProviderConfig };
 export declare class KanzenClient {
     private apiUrl;
     private apiKey;
@@ -6,11 +8,26 @@ export declare class KanzenClient {
     private debugLevel;
     private logger;
     constructor(options: KanzenClientOptions);
-    private log;
+    /**
+     * Returns the API URL.
+     * @internal
+     */
+    getApiUrl(): string;
+    /**
+     * Returns the configured webhook secret.
+     * @internal
+     */
+    getWebhookSecret(): string | undefined;
+    /**
+     * Logs a message with context according to debug levels.
+     * @internal
+     */
+    log(level: "info" | "verbose" | "trace", message: string, meta?: any): void;
     /**
      * Helper to make authenticated HTTP requests to Kanzen API
+     * @internal
      */
-    private request;
+    request<T>(path: string, options?: RequestInit): Promise<T>;
     /**
      * Create a single Account (Client, Group, or Site) in Kanzen
      */
@@ -60,7 +77,21 @@ export declare class KanzenClient {
      */
     verifyWebhookSignature(rawBody: string, signature: string): boolean;
     /**
-     * Decodes and verifies a JWT SSO token issued by KANZen using RS256 JWKS
+     * Generates the URL to redirect users to in order to start the OAuth flow.
      */
-    verifySsoToken(token: string, expectedAudience: string): Promise<any>;
+    getOAuthAuthorizationUrl(params: {
+        redirectUri: string;
+        clientId: string;
+        state?: string;
+        scopes?: string[];
+    }): string;
+    /**
+     * Exchanges the code received in the redirect callback for the user's profile.
+     */
+    exchangeOAuthCodeForProfile(params: {
+        code: string;
+        redirectUri: string;
+        clientId: string;
+        clientSecret?: string;
+    }): Promise<any>;
 }
