@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.7.0
+
+[compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.6.0...v1.7.0)
+
+### 🚀 Enhancements
+
+- **sdk:** Move to folder architecture ([9db0f0e](https://github.com/xpirience-infra/kanzen-sdk/commit/9db0f0e))
+
+### ❤️ Contributors
+
+- Tristan SCHWENK <tristan.schwenk@ezyostudio.com>
+
 ## v1.6.0
 
 [compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.5.0...v1.6.0)
