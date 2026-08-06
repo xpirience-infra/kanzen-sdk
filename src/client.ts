@@ -3,6 +3,8 @@ import { createAccount, updateAccount, deleteAccount } from "./features/accounts
 import { acquireLock, extendLock, releaseLock } from "./features/locks.js";
 import { getContact, createContact, updateContact, deleteContact, detachContact } from "./features/contacts.js";
 import { verifyWebhookSignature } from "./features/webhook.js";
+import { handleIncomingWebhook, handleIncomingWebhookRaw } from "./features/webhook_handler.js";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import {
   getOAuthAuthorizationUrl,
   exchangeOAuthCodeForProfile,
@@ -29,8 +31,10 @@ export class KanzenClient {
   private webhookSecret?: string;
   private debugLevel: KanzenDebugLevel = "none";
   private logger: (level: "info" | "verbose" | "trace", message: string, meta?: any) => void;
+  private options: KanzenClientOptions;
 
   constructor(options: KanzenClientOptions) {
+    this.options = options;
     this.apiUrl = sanitizeApiUrl(options.apiUrl);
     this.apiKey = options.apiKey;
     this.webhookSecret = options.webhookSecret;
@@ -61,6 +65,14 @@ export class KanzenClient {
    */
   getWebhookSecret(): string | undefined {
     return this.webhookSecret;
+  }
+
+  /**
+   * Returns the full options object (including event handlers).
+   * @internal
+   */
+  getOptions(): KanzenClientOptions {
+    return this.options;
   }
 
   /**
@@ -226,6 +238,62 @@ export class KanzenClient {
    */
   verifyWebhookSignature(rawBody: string, signature: string): boolean {
     return verifyWebhookSignature(this, rawBody, signature);
+  }
+
+  /**
+   * Handle an inbound webhook request from Kanzen.
+   *
+   * Reads the raw body from the Node.js request stream, verifies the
+   * HMAC-SHA256 signature, parses the payload and dispatches to the
+   * matching event handler (onAccountCreated, onContactUpdated, etc.).
+   *
+   * ⚠️ Use this only when the request body stream has NOT been consumed yet
+   * (e.g. plain Node.js HTTP server, Express without body-parser before this route).
+   * For Adonis v6, use handleRaw() instead.
+   *
+   * @example — Express (no body-parser before route)
+   * ```ts
+   * app.post('/webhooks/kanzen', (req, res) => kanzen.handle(req, res))
+   * ```
+   */
+  async handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    if (!this.webhookSecret) {
+      throw new Error(
+        "[KanzenClient] webhookSecret must be configured to use handle(). " +
+        "Pass it in KanzenClientOptions when creating the client."
+      );
+    }
+    return handleIncomingWebhook(this, req, res);
+  }
+
+  /**
+   * Handle an inbound webhook request from Kanzen when the body has already
+   * been read by a framework (e.g. Adonis v6 body parser).
+   *
+   * Verifies the HMAC-SHA256 signature against the pre-read raw body string,
+   * parses the payload and dispatches to the matching event handler.
+   *
+   * @param rawBody    The raw request body as a string (from request.raw())
+   * @param signature  The value of the x-kanzen-signature header
+   * @param res        The Node.js ServerResponse to write the HTTP response to
+   *
+   * @example — Adonis v6
+   * ```ts
+   * async handle({ request, response }: HttpContext) {
+   *   const rawBody = request.raw() ?? ''
+   *   const signature = request.header('x-kanzen-signature') ?? ''
+   *   await kanzenService.handleInboundWebhook(rawBody, signature, response.response)
+   * }
+   * ```
+   */
+  async handleRaw(rawBody: string, signature: string, res: ServerResponse): Promise<void> {
+    if (!this.webhookSecret) {
+      throw new Error(
+        "[KanzenClient] webhookSecret must be configured to use handleRaw(). " +
+        "Pass it in KanzenClientOptions when creating the client."
+      );
+    }
+    return handleIncomingWebhookRaw(this, rawBody, signature, res);
   }
 
   /**

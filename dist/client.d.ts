@@ -1,3 +1,4 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { getBetterAuthProviderConfig, getNextAuthProviderConfig } from "./features/auth.js";
 import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse } from "./types.js";
 export { getBetterAuthProviderConfig, getNextAuthProviderConfig };
@@ -7,6 +8,7 @@ export declare class KanzenClient {
     private webhookSecret?;
     private debugLevel;
     private logger;
+    private options;
     constructor(options: KanzenClientOptions);
     /**
      * Returns the API URL.
@@ -18,6 +20,11 @@ export declare class KanzenClient {
      * @internal
      */
     getWebhookSecret(): string | undefined;
+    /**
+     * Returns the full options object (including event handlers).
+     * @internal
+     */
+    getOptions(): KanzenClientOptions;
     /**
      * Logs a message with context according to debug levels.
      * @internal
@@ -76,6 +83,44 @@ export declare class KanzenClient {
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
     verifyWebhookSignature(rawBody: string, signature: string): boolean;
+    /**
+     * Handle an inbound webhook request from Kanzen.
+     *
+     * Reads the raw body from the Node.js request stream, verifies the
+     * HMAC-SHA256 signature, parses the payload and dispatches to the
+     * matching event handler (onAccountCreated, onContactUpdated, etc.).
+     *
+     * ⚠️ Use this only when the request body stream has NOT been consumed yet
+     * (e.g. plain Node.js HTTP server, Express without body-parser before this route).
+     * For Adonis v6, use handleRaw() instead.
+     *
+     * @example — Express (no body-parser before route)
+     * ```ts
+     * app.post('/webhooks/kanzen', (req, res) => kanzen.handle(req, res))
+     * ```
+     */
+    handle(req: IncomingMessage, res: ServerResponse): Promise<void>;
+    /**
+     * Handle an inbound webhook request from Kanzen when the body has already
+     * been read by a framework (e.g. Adonis v6 body parser).
+     *
+     * Verifies the HMAC-SHA256 signature against the pre-read raw body string,
+     * parses the payload and dispatches to the matching event handler.
+     *
+     * @param rawBody    The raw request body as a string (from request.raw())
+     * @param signature  The value of the x-kanzen-signature header
+     * @param res        The Node.js ServerResponse to write the HTTP response to
+     *
+     * @example — Adonis v6
+     * ```ts
+     * async handle({ request, response }: HttpContext) {
+     *   const rawBody = request.raw() ?? ''
+     *   const signature = request.header('x-kanzen-signature') ?? ''
+     *   await kanzenService.handleInboundWebhook(rawBody, signature, response.response)
+     * }
+     * ```
+     */
+    handleRaw(rawBody: string, signature: string, res: ServerResponse): Promise<void>;
     /**
      * Generates the URL to redirect users to in order to start the OAuth flow.
      */
