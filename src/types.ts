@@ -6,6 +6,32 @@ export interface KanzenClientOptions {
   webhookSecret?: string
   debug?: boolean | KanzenDebugLevel
   logger?: (level: 'info' | 'verbose' | 'trace', message: string, meta?: any) => void
+
+  // ──────────────────────────────────────────
+  // Inbound webhook event handlers (optional)
+  // Configure these to receive events pushed
+  // by Kanzen to your application.
+  // ──────────────────────────────────────────
+
+  /** Called when an account is created in Kanzen */
+  onAccountCreated?: (data: KanzenAccountResponse) => Promise<void> | void
+  /** Called when an account is updated in Kanzen */
+  onAccountUpdated?: (data: KanzenAccountResponse) => Promise<void> | void
+  /** Called when an account is deleted in Kanzen */
+  onAccountDeleted?: (data: KanzenAccountResponse) => Promise<void> | void
+
+  /** Called when a contact is created in Kanzen */
+  onContactCreated?: (data: KanzenContactResponse) => Promise<void> | void
+  /** Called when a contact is updated in Kanzen */
+  onContactUpdated?: (data: KanzenContactResponse) => Promise<void> | void
+  /** Called when a contact is deleted in Kanzen */
+  onContactDeleted?: (data: KanzenContactResponse) => Promise<void> | void
+
+  /**
+   * Fallback called for unrecognised event types.
+   * Useful for forward-compatibility with new Kanzen events.
+   */
+  onUnknownEvent?: (event: string, data: unknown) => Promise<void> | void
 }
 
 export interface KanzenAddress {
@@ -56,11 +82,34 @@ export interface KanzenAccountResponse {
   deletedAt: string | null
 }
 
-export interface KanzenWebhookPayload {
+export interface KanzenAccountWebhookPayload {
   event: 'account.created' | 'account.updated' | 'account.deleted'
   timestamp: string
   data: KanzenAccountResponse
 }
+
+export interface KanzenContactWebhookPayload {
+  event: 'contact.created' | 'contact.updated' | 'contact.deleted'
+  timestamp: string
+  data: KanzenContactResponse
+}
+
+/**
+ * Discriminated union of all webhook payloads sent by Kanzen.
+ * Use the `event` field to narrow the type of `data`.
+ *
+ * @example
+ * if (payload.event === 'account.created') {
+ *   // payload.data is KanzenAccountResponse
+ * }
+ */
+export type KanzenWebhookPayload =
+  | { event: 'account.created'; timestamp: string; data: KanzenAccountResponse }
+  | { event: 'account.updated'; timestamp: string; data: KanzenAccountResponse }
+  | { event: 'account.deleted'; timestamp: string; data: KanzenAccountResponse }
+  | { event: 'contact.created'; timestamp: string; data: KanzenContactResponse }
+  | { event: 'contact.updated'; timestamp: string; data: KanzenContactResponse }
+  | { event: 'contact.deleted'; timestamp: string; data: KanzenContactResponse }
 
 export interface KanzenLockPayload {
   entityType: string
