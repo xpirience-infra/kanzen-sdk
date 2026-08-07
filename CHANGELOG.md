@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.9.0
+
+[compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.8.0...v1.9.0)
+
+### 🚀 Enhancements
+
+- **webhooks:** Add lock event types and handlers ([2a34c44](https://github.com/xpirience-infra/kanzen-sdk/commit/2a34c44))
+
+### ❤️ Contributors
+
+- Tristan SCHWENK <tristan.schwenk@ezyostudio.com>
+
 ## v1.8.0
 
 [compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.7.0...v1.8.0)
