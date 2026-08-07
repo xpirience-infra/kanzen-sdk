@@ -134,6 +134,21 @@ async function handleIncomingWebhook(client, req, res) {
                     await options.onAccountDeleted(payload.data);
                 }
                 break;
+            case 'account.locked':
+                if (options.onAccountLocked) {
+                    await options.onAccountLocked(payload.data);
+                }
+                break;
+            case 'account.unlocked':
+                if (options.onAccountUnlocked) {
+                    await options.onAccountUnlocked(payload.data);
+                }
+                break;
+            case 'account.lock_extended':
+                if (options.onAccountLockExtended) {
+                    await options.onAccountLockExtended(payload.data);
+                }
+                break;
             case 'contact.created':
                 if (options.onContactCreated) {
                     await options.onContactCreated(payload.data);
@@ -147,6 +162,21 @@ async function handleIncomingWebhook(client, req, res) {
             case 'contact.deleted':
                 if (options.onContactDeleted) {
                     await options.onContactDeleted(payload.data);
+                }
+                break;
+            case 'contact.locked':
+                if (options.onContactLocked) {
+                    await options.onContactLocked(payload.data);
+                }
+                break;
+            case 'contact.unlocked':
+                if (options.onContactUnlocked) {
+                    await options.onContactUnlocked(payload.data);
+                }
+                break;
+            case 'contact.lock_extended':
+                if (options.onContactLockExtended) {
+                    await options.onContactLockExtended(payload.data);
                 }
                 break;
             default: {
@@ -243,6 +273,18 @@ async function handleIncomingWebhookRaw(client, rawBody, signature, res) {
                 if (options.onAccountDeleted)
                     await options.onAccountDeleted(payload.data);
                 break;
+            case 'account.locked':
+                if (options.onAccountLocked)
+                    await options.onAccountLocked(payload.data);
+                break;
+            case 'account.unlocked':
+                if (options.onAccountUnlocked)
+                    await options.onAccountUnlocked(payload.data);
+                break;
+            case 'account.lock_extended':
+                if (options.onAccountLockExtended)
+                    await options.onAccountLockExtended(payload.data);
+                break;
             case 'contact.created':
                 if (options.onContactCreated)
                     await options.onContactCreated(payload.data);
@@ -254,6 +296,18 @@ async function handleIncomingWebhookRaw(client, rawBody, signature, res) {
             case 'contact.deleted':
                 if (options.onContactDeleted)
                     await options.onContactDeleted(payload.data);
+                break;
+            case 'contact.locked':
+                if (options.onContactLocked)
+                    await options.onContactLocked(payload.data);
+                break;
+            case 'contact.unlocked':
+                if (options.onContactUnlocked)
+                    await options.onContactUnlocked(payload.data);
+                break;
+            case 'contact.lock_extended':
+                if (options.onContactLockExtended)
+                    await options.onContactLockExtended(payload.data);
                 break;
             default: {
                 const unknownEvent = payload.event;

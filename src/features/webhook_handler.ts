@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { KanzenClient } from '../client.js'
-import type { KanzenWebhookPayload } from '../types.js'
+import type { KanzenLockEventData, KanzenWebhookPayload } from '../types.js'
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -155,6 +155,24 @@ export async function handleIncomingWebhook(
         }
         break
 
+      case 'account.locked':
+        if (options.onAccountLocked) {
+          await options.onAccountLocked(payload.data as KanzenLockEventData)
+        }
+        break
+
+      case 'account.unlocked':
+        if (options.onAccountUnlocked) {
+          await options.onAccountUnlocked(payload.data as KanzenLockEventData)
+        }
+        break
+
+      case 'account.lock_extended':
+        if (options.onAccountLockExtended) {
+          await options.onAccountLockExtended(payload.data as KanzenLockEventData)
+        }
+        break
+
       case 'contact.created':
         if (options.onContactCreated) {
           await options.onContactCreated(payload.data)
@@ -170,6 +188,24 @@ export async function handleIncomingWebhook(
       case 'contact.deleted':
         if (options.onContactDeleted) {
           await options.onContactDeleted(payload.data)
+        }
+        break
+
+      case 'contact.locked':
+        if (options.onContactLocked) {
+          await options.onContactLocked(payload.data as KanzenLockEventData)
+        }
+        break
+
+      case 'contact.unlocked':
+        if (options.onContactUnlocked) {
+          await options.onContactUnlocked(payload.data as KanzenLockEventData)
+        }
+        break
+
+      case 'contact.lock_extended':
+        if (options.onContactLockExtended) {
+          await options.onContactLockExtended(payload.data as KanzenLockEventData)
         }
         break
 
@@ -283,6 +319,15 @@ export async function handleIncomingWebhookRaw(
       case 'account.deleted':
         if (options.onAccountDeleted) await options.onAccountDeleted(payload.data)
         break
+      case 'account.locked':
+        if (options.onAccountLocked) await options.onAccountLocked(payload.data as KanzenLockEventData)
+        break
+      case 'account.unlocked':
+        if (options.onAccountUnlocked) await options.onAccountUnlocked(payload.data as KanzenLockEventData)
+        break
+      case 'account.lock_extended':
+        if (options.onAccountLockExtended) await options.onAccountLockExtended(payload.data as KanzenLockEventData)
+        break
       case 'contact.created':
         if (options.onContactCreated) await options.onContactCreated(payload.data)
         break
@@ -291,6 +336,15 @@ export async function handleIncomingWebhookRaw(
         break
       case 'contact.deleted':
         if (options.onContactDeleted) await options.onContactDeleted(payload.data)
+        break
+      case 'contact.locked':
+        if (options.onContactLocked) await options.onContactLocked(payload.data as KanzenLockEventData)
+        break
+      case 'contact.unlocked':
+        if (options.onContactUnlocked) await options.onContactUnlocked(payload.data as KanzenLockEventData)
+        break
+      case 'contact.lock_extended':
+        if (options.onContactLockExtended) await options.onContactLockExtended(payload.data as KanzenLockEventData)
         break
       default: {
         const unknownEvent = (payload as any).event as string

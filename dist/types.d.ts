@@ -11,12 +11,24 @@ export interface KanzenClientOptions {
     onAccountUpdated?: (data: KanzenAccountResponse) => Promise<void> | void;
     /** Called when an account is deleted in Kanzen */
     onAccountDeleted?: (data: KanzenAccountResponse) => Promise<void> | void;
+    /** Called when a Kanzen account is locked for editing */
+    onAccountLocked?: (data: KanzenLockEventData) => Promise<void> | void;
+    /** Called when a Kanzen account lock is released */
+    onAccountUnlocked?: (data: KanzenLockEventData) => Promise<void> | void;
+    /** Called when a Kanzen account lock TTL is extended */
+    onAccountLockExtended?: (data: KanzenLockEventData) => Promise<void> | void;
     /** Called when a contact is created in Kanzen */
     onContactCreated?: (data: KanzenContactResponse) => Promise<void> | void;
     /** Called when a contact is updated in Kanzen */
     onContactUpdated?: (data: KanzenContactResponse) => Promise<void> | void;
     /** Called when a contact is deleted in Kanzen */
     onContactDeleted?: (data: KanzenContactResponse) => Promise<void> | void;
+    /** Called when a Kanzen contact is locked for editing */
+    onContactLocked?: (data: KanzenLockEventData) => Promise<void> | void;
+    /** Called when a Kanzen contact lock is released */
+    onContactUnlocked?: (data: KanzenLockEventData) => Promise<void> | void;
+    /** Called when a Kanzen contact lock TTL is extended */
+    onContactLockExtended?: (data: KanzenLockEventData) => Promise<void> | void;
     /**
      * Fallback called for unrecognised event types.
      * Useful for forward-compatibility with new Kanzen events.
@@ -99,6 +111,18 @@ export type KanzenWebhookPayload = {
     timestamp: string;
     data: KanzenAccountResponse;
 } | {
+    event: 'account.locked';
+    timestamp: string;
+    data: KanzenLockEventData;
+} | {
+    event: 'account.unlocked';
+    timestamp: string;
+    data: KanzenLockEventData;
+} | {
+    event: 'account.lock_extended';
+    timestamp: string;
+    data: KanzenLockEventData;
+} | {
     event: 'contact.created';
     timestamp: string;
     data: KanzenContactResponse;
@@ -110,6 +134,18 @@ export type KanzenWebhookPayload = {
     event: 'contact.deleted';
     timestamp: string;
     data: KanzenContactResponse;
+} | {
+    event: 'contact.locked';
+    timestamp: string;
+    data: KanzenLockEventData;
+} | {
+    event: 'contact.unlocked';
+    timestamp: string;
+    data: KanzenLockEventData;
+} | {
+    event: 'contact.lock_extended';
+    timestamp: string;
+    data: KanzenLockEventData;
 };
 export interface KanzenLockPayload {
     entityType: string;
@@ -120,6 +156,17 @@ export interface KanzenLockResponse {
     success: boolean;
     ttl?: number;
     error?: string;
+}
+/**
+ * Data shape carried by lock webhook events (account.locked, contact.unlocked, etc.).
+ */
+export interface KanzenLockEventData {
+    /** Entity type in Kanzen — 'account' or 'contact' */
+    entityType: string;
+    /** Kanzen ID of the locked entity */
+    entityId: string;
+    /** Lease TTL in seconds — present on lock / extend, absent on unlock */
+    leaseTtl?: number;
 }
 export interface KanzenContactPayload {
     civilityId?: string | null;
