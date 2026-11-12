@@ -14,11 +14,11 @@ export interface KanzenClientOptions {
   // ──────────────────────────────────────────
 
   /** Called when an account is created in Kanzen */
-  onAccountCreated?: (data: KanzenAccountResponse) => Promise<void> | void
+  onAccountCreated?: (data: KanzenAccountEventData) => Promise<void> | void
   /** Called when an account is updated in Kanzen */
-  onAccountUpdated?: (data: KanzenAccountResponse) => Promise<void> | void
+  onAccountUpdated?: (data: KanzenAccountEventData) => Promise<void> | void
   /** Called when an account is deleted in Kanzen */
-  onAccountDeleted?: (data: KanzenAccountResponse) => Promise<void> | void
+  onAccountDeleted?: (data: KanzenDeletedEventData) => Promise<void> | void
 
   /** Called when a Kanzen account is locked for editing */
   onAccountLocked?: (data: KanzenLockEventData) => Promise<void> | void
@@ -28,11 +28,11 @@ export interface KanzenClientOptions {
   onAccountLockExtended?: (data: KanzenLockEventData) => Promise<void> | void
 
   /** Called when a contact is created in Kanzen */
-  onContactCreated?: (data: KanzenContactResponse) => Promise<void> | void
+  onContactCreated?: (data: KanzenContactEventData) => Promise<void> | void
   /** Called when a contact is updated in Kanzen */
-  onContactUpdated?: (data: KanzenContactResponse) => Promise<void> | void
+  onContactUpdated?: (data: KanzenContactEventData) => Promise<void> | void
   /** Called when a contact is deleted in Kanzen */
-  onContactDeleted?: (data: KanzenContactResponse) => Promise<void> | void
+  onContactDeleted?: (data: KanzenDeletedEventData) => Promise<void> | void
 
   /** Called when a Kanzen contact is locked for editing */
   onContactLocked?: (data: KanzenLockEventData) => Promise<void> | void
@@ -96,17 +96,59 @@ export interface KanzenAccountResponse {
   deletedAt: string | null
 }
 
-export interface KanzenAccountWebhookPayload {
-  event: 'account.created' | 'account.updated' | 'account.deleted'
+/**
+ * Envelope of every webhook sent by Kanzen.
+ * Mirrors `WebhookPayload` in Kanzen (`webhook_events.ts`).
+ */
+export interface KanzenWebhookEnvelope<E extends string = string, D = unknown> {
+  event: E
   timestamp: string
-  data: KanzenAccountResponse
+  updatedAt: string
+  tenantId: string
+  /** User who made the change in Kanzen, null when unknown */
+  actorId: string | null
+  data: D
 }
 
-export interface KanzenContactWebhookPayload {
-  event: 'contact.created' | 'contact.updated' | 'contact.deleted'
-  timestamp: string
-  data: KanzenContactResponse
+/** `data` of `account.created` and `account.updated`. */
+export interface KanzenAccountEventData {
+  id: string
+  name: string
+  firstname: string | null
+  lastname: string | null
+  email: string | null
+  phone: string | null
+  originId: string | null
+  /** Value of the first account relation type, null when the account has none */
+  accountType: string | null
 }
+
+/** `data` of `contact.created` and `contact.updated`. */
+export interface KanzenContactEventData {
+  id: string
+  firstname: string | null
+  lastname: string | null
+  fullname: string
+  civilityId: string | null
+  emailaddress2: string | null
+  phone2: string | null
+  mainCommunicationLanguage: string | null
+  originId: string | null
+}
+
+/** `data` of `account.deleted` and `contact.deleted`. */
+export interface KanzenDeletedEventData {
+  id: string
+  originId: string | null
+}
+
+export type KanzenAccountWebhookPayload =
+  | KanzenWebhookEnvelope<'account.created' | 'account.updated', KanzenAccountEventData>
+  | KanzenWebhookEnvelope<'account.deleted', KanzenDeletedEventData>
+
+export type KanzenContactWebhookPayload =
+  | KanzenWebhookEnvelope<'contact.created' | 'contact.updated', KanzenContactEventData>
+  | KanzenWebhookEnvelope<'contact.deleted', KanzenDeletedEventData>
 
 /**
  * Discriminated union of all webhook payloads sent by Kanzen.
@@ -114,22 +156,22 @@ export interface KanzenContactWebhookPayload {
  *
  * @example
  * if (payload.event === 'account.created') {
- *   // payload.data is KanzenAccountResponse
+ *   // payload.data is KanzenAccountEventData
  * }
  */
 export type KanzenWebhookPayload =
-  | { event: 'account.created'; timestamp: string; data: KanzenAccountResponse }
-  | { event: 'account.updated'; timestamp: string; data: KanzenAccountResponse }
-  | { event: 'account.deleted'; timestamp: string; data: KanzenAccountResponse }
-  | { event: 'account.locked'; timestamp: string; data: KanzenLockEventData }
-  | { event: 'account.unlocked'; timestamp: string; data: KanzenLockEventData }
-  | { event: 'account.lock_extended'; timestamp: string; data: KanzenLockEventData }
-  | { event: 'contact.created'; timestamp: string; data: KanzenContactResponse }
-  | { event: 'contact.updated'; timestamp: string; data: KanzenContactResponse }
-  | { event: 'contact.deleted'; timestamp: string; data: KanzenContactResponse }
-  | { event: 'contact.locked'; timestamp: string; data: KanzenLockEventData }
-  | { event: 'contact.unlocked'; timestamp: string; data: KanzenLockEventData }
-  | { event: 'contact.lock_extended'; timestamp: string; data: KanzenLockEventData }
+  | KanzenWebhookEnvelope<'account.created', KanzenAccountEventData>
+  | KanzenWebhookEnvelope<'account.updated', KanzenAccountEventData>
+  | KanzenWebhookEnvelope<'account.deleted', KanzenDeletedEventData>
+  | KanzenWebhookEnvelope<'account.locked', KanzenLockEventData>
+  | KanzenWebhookEnvelope<'account.unlocked', KanzenLockEventData>
+  | KanzenWebhookEnvelope<'account.lock_extended', KanzenLockEventData>
+  | KanzenWebhookEnvelope<'contact.created', KanzenContactEventData>
+  | KanzenWebhookEnvelope<'contact.updated', KanzenContactEventData>
+  | KanzenWebhookEnvelope<'contact.deleted', KanzenDeletedEventData>
+  | KanzenWebhookEnvelope<'contact.locked', KanzenLockEventData>
+  | KanzenWebhookEnvelope<'contact.unlocked', KanzenLockEventData>
+  | KanzenWebhookEnvelope<'contact.lock_extended', KanzenLockEventData>
 
 export interface KanzenLockPayload {
   entityType: string
@@ -164,6 +206,7 @@ export interface KanzenContactPayload {
   phone2?: string | null
   contactRelationType?: string | null
   mainCommunicationLanguage?: string | null
+  originId?: string | null
   accounts?: { id: string; relationType?: string }[]
   additionalFields?: {
     jobtitle?: string | null
@@ -181,6 +224,7 @@ export interface KanzenContactResponse {
   emailaddress2: string | null
   phone2: string | null
   mainCommunicationLanguage: string | null
+  originId?: string | null
   accounts: {
     id: string
     name: string

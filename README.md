@@ -64,12 +64,12 @@ interface KanzenClientOptions {
   logger?: (level: 'info' | 'verbose' | 'trace', message: string, meta?: any) => void
 
   // ── Inbound webhook handlers (all optional) ───────────────────────────────
-  onAccountCreated?: (data: KanzenAccountResponse) => Promise<void> | void
-  onAccountUpdated?: (data: KanzenAccountResponse) => Promise<void> | void
-  onAccountDeleted?: (data: KanzenAccountResponse) => Promise<void> | void
-  onContactCreated?: (data: KanzenContactResponse) => Promise<void> | void
-  onContactUpdated?: (data: KanzenContactResponse) => Promise<void> | void
-  onContactDeleted?: (data: KanzenContactResponse) => Promise<void> | void
+  onAccountCreated?: (data: KanzenAccountEventData) => Promise<void> | void
+  onAccountUpdated?: (data: KanzenAccountEventData) => Promise<void> | void
+  onAccountDeleted?: (data: KanzenDeletedEventData) => Promise<void> | void
+  onContactCreated?: (data: KanzenContactEventData) => Promise<void> | void
+  onContactUpdated?: (data: KanzenContactEventData) => Promise<void> | void
+  onContactDeleted?: (data: KanzenDeletedEventData) => Promise<void> | void
 
   /**
    * Fallback for unrecognised event types.
@@ -182,13 +182,17 @@ app.post('/webhooks/kanzen', (req, res) => {
 
 | Event | Handler | `data` type |
 |---|---|---|
-| `account.created` | `onAccountCreated` | `KanzenAccountResponse` |
-| `account.updated` | `onAccountUpdated` | `KanzenAccountResponse` |
-| `account.deleted` | `onAccountDeleted` | `KanzenAccountResponse` |
-| `contact.created` | `onContactCreated` | `KanzenContactResponse` |
-| `contact.updated` | `onContactUpdated` | `KanzenContactResponse` |
-| `contact.deleted` | `onContactDeleted` | `KanzenContactResponse` |
+| `account.created` | `onAccountCreated` | `KanzenAccountEventData` |
+| `account.updated` | `onAccountUpdated` | `KanzenAccountEventData` |
+| `account.deleted` | `onAccountDeleted` | `KanzenDeletedEventData` |
+| `contact.created` | `onContactCreated` | `KanzenContactEventData` |
+| `contact.updated` | `onContactUpdated` | `KanzenContactEventData` |
+| `contact.deleted` | `onContactDeleted` | `KanzenDeletedEventData` |
+| `account.locked` / `account.unlocked` / `account.lock_extended` | `onAccountLocked` / `onAccountUnlocked` / `onAccountLockExtended` | `KanzenLockEventData` |
+| `contact.locked` / `contact.unlocked` / `contact.lock_extended` | `onContactLocked` / `onContactUnlocked` / `onContactLockExtended` | `KanzenLockEventData` |
 | *(any other)* | `onUnknownEvent` | `unknown` |
+
+Every event arrives in the envelope `KanzenWebhookEnvelope`: `{ event, timestamp, updatedAt, tenantId, actorId, data }`. `actorId` is the Kanzen user who made the change, or `null`. The `data` of create and update events holds only the fields listed in `KanzenAccountEventData` and `KanzenContactEventData` (not the full API response); `originId` is included. Contacts can be created and updated with `originId` too (`KanzenContactPayload.originId`).
 
 ### Response Codes
 
@@ -336,9 +340,14 @@ if (!isValid) {
 |---|---|
 | `KanzenClientOptions` | Constructor options |
 | `KanzenWebhookPayload` | Discriminated union of all webhook payloads |
-| `KanzenAccountResponse` | Account data shape from Kanzen |
+| `KanzenWebhookEnvelope` | Envelope of every webhook (`event`, `timestamp`, `updatedAt`, `tenantId`, `actorId`, `data`) |
+| `KanzenAccountEventData` | `data` of `account.created` / `account.updated` |
+| `KanzenContactEventData` | `data` of `contact.created` / `contact.updated` |
+| `KanzenDeletedEventData` | `data` of `account.deleted` / `contact.deleted` |
+| `KanzenLockEventData` | `data` of lock events |
+| `KanzenAccountResponse` | Account data shape from the REST API |
 | `KanzenAccountPayload` | Payload for creating/updating an account |
-| `KanzenContactResponse` | Contact data shape from Kanzen |
+| `KanzenContactResponse` | Contact data shape from the REST API |
 | `KanzenContactPayload` | Payload for creating/updating a contact |
 | `KanzenAddress` | Address sub-object |
 | `KanzenAddressResponse` | Address sub-object (response) |
