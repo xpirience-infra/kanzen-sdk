@@ -206,7 +206,7 @@ export interface KanzenContactPayload {
   phone2?: string | null
   contactRelationType?: string | null
   mainCommunicationLanguage?: string | null
-  originId?: string | null
+  originId?: string
   accounts?: { id: string; relationType?: string }[]
   additionalFields?: {
     jobtitle?: string | null
