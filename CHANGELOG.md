@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v2.0.0
+
+[compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.9.0...v2.0.0)
+
+### 🚀 Enhancements
+
+- **sdk:** ⚠️  Contact originId, webhook payload types match Kanzen ([20c28b0](https://github.com/xpirience-infra/kanzen-sdk/commit/20c28b0))
+
+### 🩹 Fixes
+
+- **sdk:** Contact originId is a string ([29a1334](https://github.com/xpirience-infra/kanzen-sdk/commit/29a1334))
+
+#### ⚠️ Breaking Changes
+
+- **sdk:** ⚠️  Contact originId, webhook payload types match Kanzen ([20c28b0](https://github.com/xpirience-infra/kanzen-sdk/commit/20c28b0))
+
+### ❤️ Contributors
+
+- Tristan SCHWENK <tristan.schwenk@ezyostudio.com>
+
 ## v1.9.0
 
 [compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.8.0...v1.9.0)
