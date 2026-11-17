@@ -281,6 +281,39 @@ await kanzen.releaseLock({ entityType: 'account', entityId: account.id })
 
 ---
 
+## Outbound API — SEPA Mandates
+
+A SEPA mandate belongs to an account; an account can hold several (one per debited bank account). Statuses: `PENDING`, `SENT`, `SIGNED`, `REJECTED`, `REVOKED`. `externalActor` records the name of the person who acted in your app.
+
+```ts
+// List the mandates of an account
+const mandates = await kanzen.listSepaMandates(account.id)
+
+// Create a mandate (all fields optional; scheme defaults to CORE for individuals, B2B otherwise)
+const mandate = await kanzen.createSepaMandate(account.id, {
+  iban: 'FR7630006000011234567890189',
+  bic: 'AGRIFRPP',
+  externalActor: 'Jane Doe',
+})
+// mandate.rum, mandate.status === 'PENDING'
+
+// Download the PDF to sign (short-lived URL)
+const { url: pdfUrl } = await kanzen.getSepaMandatePdfUrl(mandate.id)
+
+// Upload the signed copy (Buffer or Blob; PDF, PNG or JPEG). The mandate becomes SIGNED.
+const signed = await kanzen.uploadSignedSepaMandate(mandate.id, fileBuffer, 'mandate.pdf', 'Jane Doe')
+
+// Download the signed copy (short-lived URL)
+const { url: signedUrl } = await kanzen.getSignedSepaMandateUrl(mandate.id)
+
+// Update status or bank details
+await kanzen.updateSepaMandate(mandate.id, { status: 'REVOKED', externalActor: 'Jane Doe' })
+```
+
+A refused status change throws `Kanzen API Error (409): ...E_SEPA_MANDATE_TRANSITION...`; an unknown mandate or account throws `Kanzen API Error (404): ...`.
+
+---
+
 ## OAuth Helpers
 
 For integrating Kanzen as an OAuth / OIDC provider.
@@ -353,6 +386,12 @@ if (!isValid) {
 | `KanzenAddressResponse` | Address sub-object (response) |
 | `KanzenLockPayload` | Lock operation payload |
 | `KanzenLockResponse` | Lock operation response |
+| `KanzenSepaMandate` | SEPA mandate data shape from the REST API |
+| `KanzenSepaMandateStatus` | `'PENDING' \| 'SENT' \| 'SIGNED' \| 'REJECTED' \| 'REVOKED'` |
+| `KanzenSepaMandateScheme` | `'B2B' \| 'CORE'` |
+| `KanzenCreateSepaMandatePayload` | Payload for creating a SEPA mandate |
+| `KanzenUpdateSepaMandatePayload` | Payload for updating a SEPA mandate |
+| `KanzenSignedUrl` | `{ url }` short-lived download URL |
 | `KanzenOAuthConfigOptions` | OAuth helper configuration |
 | `KanzenDebugLevel` | `'none' \| 'info' \| 'verbose' \| 'trace'` |
 

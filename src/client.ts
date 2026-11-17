@@ -2,6 +2,14 @@ import { sanitizeApiUrl } from "./features/utils.js";
 import { createAccount, updateAccount, deleteAccount } from "./features/accounts.js";
 import { acquireLock, extendLock, releaseLock } from "./features/locks.js";
 import { getContact, createContact, updateContact, deleteContact, detachContact } from "./features/contacts.js";
+import {
+  listSepaMandates,
+  createSepaMandate,
+  getSepaMandatePdfUrl,
+  uploadSignedSepaMandate,
+  getSignedSepaMandateUrl,
+  updateSepaMandate,
+} from "./features/sepa_mandates.js";
 import { verifyWebhookSignature } from "./features/webhook.js";
 import { handleIncomingWebhook, handleIncomingWebhookRaw } from "./features/webhook_handler.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -20,6 +28,10 @@ import type {
   KanzenLockResponse,
   KanzenContactPayload,
   KanzenContactResponse,
+  KanzenSepaMandate,
+  KanzenCreateSepaMandatePayload,
+  KanzenUpdateSepaMandatePayload,
+  KanzenSignedUrl,
 } from "./types.js";
 
 // Re-export standalone configuration helper functions
@@ -236,6 +248,60 @@ export class KanzenClient {
    */
   async detachContact(id: string, accountId: string): Promise<void> {
     return detachContact(this, id, accountId);
+  }
+
+  /**
+   * List the SEPA mandates of an account
+   */
+  async listSepaMandates(accountId: string): Promise<KanzenSepaMandate[]> {
+    return listSepaMandates(this, accountId);
+  }
+
+  /**
+   * Create a SEPA mandate on an account
+   */
+  async createSepaMandate(
+    accountId: string,
+    payload?: KanzenCreateSepaMandatePayload,
+  ): Promise<KanzenSepaMandate> {
+    return createSepaMandate(this, accountId, payload);
+  }
+
+  /**
+   * Get a short-lived URL to download the mandate PDF (unsigned)
+   */
+  async getSepaMandatePdfUrl(mandateId: string): Promise<KanzenSignedUrl> {
+    return getSepaMandatePdfUrl(this, mandateId);
+  }
+
+  /**
+   * Upload the signed copy of a mandate (PDF, PNG or JPEG).
+   * The mandate becomes SIGNED.
+   */
+  async uploadSignedSepaMandate(
+    mandateId: string,
+    file: Buffer | Blob,
+    filename: string,
+    externalActor?: string,
+  ): Promise<KanzenSepaMandate> {
+    return uploadSignedSepaMandate(this, mandateId, file, filename, externalActor);
+  }
+
+  /**
+   * Get a short-lived URL to download the signed copy of a mandate
+   */
+  async getSignedSepaMandateUrl(mandateId: string): Promise<KanzenSignedUrl> {
+    return getSignedSepaMandateUrl(this, mandateId);
+  }
+
+  /**
+   * Update a mandate (status, bank details, external actor)
+   */
+  async updateSepaMandate(
+    mandateId: string,
+    payload: KanzenUpdateSepaMandatePayload,
+  ): Promise<KanzenSepaMandate> {
+    return updateSepaMandate(this, mandateId, payload);
   }
 
   /**

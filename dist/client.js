@@ -5,6 +5,7 @@ const utils_js_1 = require("./features/utils.js");
 const accounts_js_1 = require("./features/accounts.js");
 const locks_js_1 = require("./features/locks.js");
 const contacts_js_1 = require("./features/contacts.js");
+const sepa_mandates_js_1 = require("./features/sepa_mandates.js");
 const webhook_js_1 = require("./features/webhook.js");
 const webhook_handler_js_1 = require("./features/webhook_handler.js");
 const auth_js_1 = require("./features/auth.js");
@@ -185,6 +186,43 @@ class KanzenClient {
      */
     async detachContact(id, accountId) {
         return (0, contacts_js_1.detachContact)(this, id, accountId);
+    }
+    /**
+     * List the SEPA mandates of an account
+     */
+    async listSepaMandates(accountId) {
+        return (0, sepa_mandates_js_1.listSepaMandates)(this, accountId);
+    }
+    /**
+     * Create a SEPA mandate on an account
+     */
+    async createSepaMandate(accountId, payload) {
+        return (0, sepa_mandates_js_1.createSepaMandate)(this, accountId, payload);
+    }
+    /**
+     * Get a short-lived URL to download the mandate PDF (unsigned)
+     */
+    async getSepaMandatePdfUrl(mandateId) {
+        return (0, sepa_mandates_js_1.getSepaMandatePdfUrl)(this, mandateId);
+    }
+    /**
+     * Upload the signed copy of a mandate (PDF, PNG or JPEG).
+     * The mandate becomes SIGNED.
+     */
+    async uploadSignedSepaMandate(mandateId, file, filename, externalActor) {
+        return (0, sepa_mandates_js_1.uploadSignedSepaMandate)(this, mandateId, file, filename, externalActor);
+    }
+    /**
+     * Get a short-lived URL to download the signed copy of a mandate
+     */
+    async getSignedSepaMandateUrl(mandateId) {
+        return (0, sepa_mandates_js_1.getSignedSepaMandateUrl)(this, mandateId);
+    }
+    /**
+     * Update a mandate (status, bank details, external actor)
+     */
+    async updateSepaMandate(mandateId, payload) {
+        return (0, sepa_mandates_js_1.updateSepaMandate)(this, mandateId, payload);
     }
     /**
      * Verify HMAC-SHA256 signature for incoming webhooks
