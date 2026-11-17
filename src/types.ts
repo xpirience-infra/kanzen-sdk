@@ -304,7 +304,8 @@ export interface KanzenCreateSepaMandatePayload {
 }
 
 export interface KanzenUpdateSepaMandatePayload {
-  status?: KanzenSepaMandateStatus
+  /** `SIGNED` is reached only through `uploadSignedSepaMandate`; `PENDING` never */
+  status?: 'SENT' | 'REJECTED' | 'REVOKED'
   iban?: string | null
   bic?: string | null
   externalActor?: string

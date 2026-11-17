@@ -306,7 +306,8 @@ const signed = await kanzen.uploadSignedSepaMandate(mandate.id, fileBuffer, 'man
 // Download the signed copy (short-lived URL)
 const { url: signedUrl } = await kanzen.getSignedSepaMandateUrl(mandate.id)
 
-// Update status or bank details
+// Update status ('SENT' | 'REJECTED' | 'REVOKED') or bank details.
+// SIGNED is set only by uploadSignedSepaMandate; a mandate never goes back to PENDING.
 await kanzen.updateSepaMandate(mandate.id, { status: 'REVOKED', externalActor: 'Jane Doe' })
 ```
 
@@ -390,7 +391,7 @@ if (!isValid) {
 | `KanzenSepaMandateStatus` | `'PENDING' \| 'SENT' \| 'SIGNED' \| 'REJECTED' \| 'REVOKED'` |
 | `KanzenSepaMandateScheme` | `'B2B' \| 'CORE'` |
 | `KanzenCreateSepaMandatePayload` | Payload for creating a SEPA mandate |
-| `KanzenUpdateSepaMandatePayload` | Payload for updating a SEPA mandate |
+| `KanzenUpdateSepaMandatePayload` | Payload for updating a SEPA mandate (`status`: `'SENT' \| 'REJECTED' \| 'REVOKED'`) |
 | `KanzenSignedUrl` | `{ url }` short-lived download URL |
 | `KanzenOAuthConfigOptions` | OAuth helper configuration |
 | `KanzenDebugLevel` | `'none' \| 'info' \| 'verbose' \| 'trace'` |
