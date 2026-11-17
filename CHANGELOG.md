@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v2.1.0
+
+[compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v2.0.0...v2.1.0)
+
+### 🚀 Enhancements
+
+- **sepa-mandates:** Types and multipart requests ([219548e](https://github.com/xpirience-infra/kanzen-sdk/commit/219548e))
+- **sepa-mandates:** Client methods for SEPA mandates ([9d6bd2a](https://github.com/xpirience-infra/kanzen-sdk/commit/9d6bd2a))
+- **sepa-mandates:** Update payload status limited to SENT, REJECTED, REVOKED ([9fc17fe](https://github.com/xpirience-infra/kanzen-sdk/commit/9fc17fe))
+
+### 📖 Documentation
+
+- CLAUDE.md ([69aca76](https://github.com/xpirience-infra/kanzen-sdk/commit/69aca76))
+
+### ❤️ Contributors
+
+- Tristan SCHWENK <tristan.schwenk@ezyostudio.com>
+
 ## v2.0.0
 
 [compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v1.9.0...v2.0.0)
