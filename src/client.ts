@@ -100,15 +100,20 @@ export class KanzenClient {
     options: RequestInit = {},
   ): Promise<T> {
     const url = `${this.apiUrl}${path}`;
+    // For FormData bodies, fetch sets multipart/form-data with the boundary itself.
+    const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
     const headers = {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       "x-api-key": this.apiKey,
       ...options.headers,
     };
 
     const method = options.method || "GET";
     this.log("info", `Request start: ${method} ${path}`);
-    this.log("verbose", `Request headers & body metadata`, { headers, bodyLength: options.body ? String(options.body).length : 0 });
+    this.log("verbose", `Request headers & body metadata`, {
+      headers,
+      bodyLength: isFormData ? "multipart" : options.body ? String(options.body).length : 0,
+    });
     this.log("trace", `Request body payload`, { body: options.body });
 
     let response: Response;

@@ -267,3 +267,50 @@ export interface NextAuthCustomProviderConfig {
   clientId: string
   clientSecret?: string
 }
+
+// ──────────────────────────────────────────
+// SEPA mandates
+// ──────────────────────────────────────────
+
+export type KanzenSepaMandateStatus = 'PENDING' | 'SENT' | 'SIGNED' | 'REJECTED' | 'REVOKED'
+
+/** `B2B` = SEPA Interentreprises, `CORE` = SEPA Core (individuals) */
+export type KanzenSepaMandateScheme = 'B2B' | 'CORE'
+
+export interface KanzenSepaMandate {
+  id: string
+  accountId: string
+  projectId: string | null
+  /** Unique mandate reference (Référence Unique de Mandat) */
+  rum: string
+  status: KanzenSepaMandateStatus
+  scheme: KanzenSepaMandateScheme
+  iban: string | null
+  bic: string | null
+  signedAt: string | null
+  /** Name of the person who acted in the external app */
+  externalActor: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface KanzenCreateSepaMandatePayload {
+  projectId?: string
+  iban?: string
+  bic?: string
+  /** Defaults to `CORE` for individual accounts, `B2B` otherwise */
+  scheme?: KanzenSepaMandateScheme
+  externalActor?: string
+}
+
+export interface KanzenUpdateSepaMandatePayload {
+  status?: KanzenSepaMandateStatus
+  iban?: string | null
+  bic?: string | null
+  externalActor?: string
+}
+
+/** Short-lived signed download URL */
+export interface KanzenSignedUrl {
+  url: string
+}
