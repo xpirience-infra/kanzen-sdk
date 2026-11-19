@@ -209,6 +209,12 @@ export async function handleIncomingWebhook(
         }
         break
 
+      case 'sepa_mandate.signed':
+        if (options.onSepaMandateSigned) {
+          await options.onSepaMandateSigned(payload.data)
+        }
+        break
+
       default: {
         const unknownEvent = (payload as any).event as string
         client.log('info', `[webhook] Unknown event type: ${unknownEvent}`)
@@ -345,6 +351,9 @@ export async function handleIncomingWebhookRaw(
         break
       case 'contact.lock_extended':
         if (options.onContactLockExtended) await options.onContactLockExtended(payload.data as KanzenLockEventData)
+        break
+      case 'sepa_mandate.signed':
+        if (options.onSepaMandateSigned) await options.onSepaMandateSigned(payload.data)
         break
       default: {
         const unknownEvent = (payload as any).event as string

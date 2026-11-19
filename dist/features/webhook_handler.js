@@ -179,6 +179,11 @@ async function handleIncomingWebhook(client, req, res) {
                     await options.onContactLockExtended(payload.data);
                 }
                 break;
+            case 'sepa_mandate.signed':
+                if (options.onSepaMandateSigned) {
+                    await options.onSepaMandateSigned(payload.data);
+                }
+                break;
             default: {
                 const unknownEvent = payload.event;
                 client.log('info', `[webhook] Unknown event type: ${unknownEvent}`);
@@ -308,6 +313,10 @@ async function handleIncomingWebhookRaw(client, rawBody, signature, res) {
             case 'contact.lock_extended':
                 if (options.onContactLockExtended)
                     await options.onContactLockExtended(payload.data);
+                break;
+            case 'sepa_mandate.signed':
+                if (options.onSepaMandateSigned)
+                    await options.onSepaMandateSigned(payload.data);
                 break;
             default: {
                 const unknownEvent = payload.event;

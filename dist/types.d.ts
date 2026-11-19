@@ -29,6 +29,8 @@ export interface KanzenClientOptions {
     onContactUnlocked?: (data: KanzenLockEventData) => Promise<void> | void;
     /** Called when a Kanzen contact lock TTL is extended */
     onContactLockExtended?: (data: KanzenLockEventData) => Promise<void> | void;
+    /** Called when the debtor signs a SEPA mandate on the Kanzen-hosted page (one call per mandate) */
+    onSepaMandateSigned?: (data: KanzenSepaMandateSignedEventData) => Promise<void> | void;
     /**
      * Fallback called for unrecognised event types.
      * Useful for forward-compatibility with new Kanzen events.
@@ -116,6 +118,15 @@ export interface KanzenContactEventData {
     mainCommunicationLanguage: string | null;
     originId: string | null;
 }
+/** `data` of `sepa_mandate.signed`. Holds no bank details. */
+export interface KanzenSepaMandateSignedEventData {
+    /** Mandate id */
+    id: string;
+    rum: string;
+    debtorAccountId: string;
+    coveredAccountIds: string[];
+    signedAt: string;
+}
 /** `data` of `account.deleted` and `contact.deleted`. */
 export interface KanzenDeletedEventData {
     id: string;
@@ -132,7 +143,7 @@ export type KanzenContactWebhookPayload = KanzenWebhookEnvelope<'contact.created
  *   // payload.data is KanzenAccountEventData
  * }
  */
-export type KanzenWebhookPayload = KanzenWebhookEnvelope<'account.created', KanzenAccountEventData> | KanzenWebhookEnvelope<'account.updated', KanzenAccountEventData> | KanzenWebhookEnvelope<'account.deleted', KanzenDeletedEventData> | KanzenWebhookEnvelope<'account.locked', KanzenLockEventData> | KanzenWebhookEnvelope<'account.unlocked', KanzenLockEventData> | KanzenWebhookEnvelope<'account.lock_extended', KanzenLockEventData> | KanzenWebhookEnvelope<'contact.created', KanzenContactEventData> | KanzenWebhookEnvelope<'contact.updated', KanzenContactEventData> | KanzenWebhookEnvelope<'contact.deleted', KanzenDeletedEventData> | KanzenWebhookEnvelope<'contact.locked', KanzenLockEventData> | KanzenWebhookEnvelope<'contact.unlocked', KanzenLockEventData> | KanzenWebhookEnvelope<'contact.lock_extended', KanzenLockEventData>;
+export type KanzenWebhookPayload = KanzenWebhookEnvelope<'account.created', KanzenAccountEventData> | KanzenWebhookEnvelope<'account.updated', KanzenAccountEventData> | KanzenWebhookEnvelope<'account.deleted', KanzenDeletedEventData> | KanzenWebhookEnvelope<'account.locked', KanzenLockEventData> | KanzenWebhookEnvelope<'account.unlocked', KanzenLockEventData> | KanzenWebhookEnvelope<'account.lock_extended', KanzenLockEventData> | KanzenWebhookEnvelope<'contact.created', KanzenContactEventData> | KanzenWebhookEnvelope<'contact.updated', KanzenContactEventData> | KanzenWebhookEnvelope<'contact.deleted', KanzenDeletedEventData> | KanzenWebhookEnvelope<'contact.locked', KanzenLockEventData> | KanzenWebhookEnvelope<'contact.unlocked', KanzenLockEventData> | KanzenWebhookEnvelope<'contact.lock_extended', KanzenLockEventData> | KanzenWebhookEnvelope<'sepa_mandate.signed', KanzenSepaMandateSignedEventData>;
 export interface KanzenLockPayload {
     entityType: string;
     entityId: string | number;

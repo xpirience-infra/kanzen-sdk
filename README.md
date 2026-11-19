@@ -70,6 +70,7 @@ interface KanzenClientOptions {
   onContactCreated?: (data: KanzenContactEventData) => Promise<void> | void
   onContactUpdated?: (data: KanzenContactEventData) => Promise<void> | void
   onContactDeleted?: (data: KanzenDeletedEventData) => Promise<void> | void
+  onSepaMandateSigned?: (data: KanzenSepaMandateSignedEventData) => Promise<void> | void
 
   /**
    * Fallback for unrecognised event types.
@@ -190,6 +191,7 @@ app.post('/webhooks/kanzen', (req, res) => {
 | `contact.deleted` | `onContactDeleted` | `KanzenDeletedEventData` |
 | `account.locked` / `account.unlocked` / `account.lock_extended` | `onAccountLocked` / `onAccountUnlocked` / `onAccountLockExtended` | `KanzenLockEventData` |
 | `contact.locked` / `contact.unlocked` / `contact.lock_extended` | `onContactLocked` / `onContactUnlocked` / `onContactLockExtended` | `KanzenLockEventData` |
+| `sepa_mandate.signed` | `onSepaMandateSigned` | `KanzenSepaMandateSignedEventData` |
 | *(any other)* | `onUnknownEvent` | `unknown` |
 
 Every event arrives in the envelope `KanzenWebhookEnvelope`: `{ event, timestamp, updatedAt, tenantId, actorId, data }`. `actorId` is the Kanzen user who made the change, or `null`. The `data` of create and update events holds only the fields listed in `KanzenAccountEventData` and `KanzenContactEventData` (not the full API response); `originId` is included. Contacts can be created and updated with `originId` too (`KanzenContactPayload.originId`).
@@ -444,6 +446,7 @@ if (!isValid) {
 | `KanzenContactEventData` | `data` of `contact.created` / `contact.updated` |
 | `KanzenDeletedEventData` | `data` of `account.deleted` / `contact.deleted` |
 | `KanzenLockEventData` | `data` of lock events |
+| `KanzenSepaMandateSignedEventData` | `data` of `sepa_mandate.signed` (`id`, `rum`, `debtorAccountId`, `coveredAccountIds`, `signedAt`) |
 | `KanzenAccountResponse` | Account data shape from the REST API |
 | `KanzenAccountPayload` | Payload for creating/updating an account |
 | `KanzenContactResponse` | Contact data shape from the REST API |
