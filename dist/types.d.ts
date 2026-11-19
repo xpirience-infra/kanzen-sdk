@@ -233,11 +233,15 @@ export interface KanzenSepaMandate {
     projectId: string | null;
     /** Unique mandate reference (Référence Unique de Mandat) */
     rum: string;
+    /** Free label shown on the mandate, null when none */
+    label: string | null;
     status: KanzenSepaMandateStatus;
     scheme: KanzenSepaMandateScheme;
     iban: string | null;
     bic: string | null;
     signedAt: string | null;
+    /** Accounts the mandate covers: the debtor account and the descendants added to it */
+    coveredAccountIds: string[];
     /** Name of the person who acted in the external app */
     externalActor: string | null;
     createdAt: string;
@@ -250,6 +254,9 @@ export interface KanzenCreateSepaMandatePayload {
     /** Defaults to `CORE` for individual accounts, `B2B` otherwise */
     scheme?: KanzenSepaMandateScheme;
     externalActor?: string;
+    label?: string;
+    /** Descendants of the debtor account to cover as well (the debtor is always covered) */
+    coveredAccountIds?: string[];
 }
 export interface KanzenUpdateSepaMandatePayload {
     /** `SIGNED` is reached only through `uploadSignedSepaMandate`; `PENDING` never */
@@ -257,6 +264,7 @@ export interface KanzenUpdateSepaMandatePayload {
     iban?: string | null;
     bic?: string | null;
     externalActor?: string;
+    label?: string | null;
 }
 /** Short-lived signed download URL */
 export interface KanzenSignedUrl {

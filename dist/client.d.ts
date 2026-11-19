@@ -105,6 +105,15 @@ export declare class KanzenClient {
      */
     updateSepaMandate(mandateId: string, payload: KanzenUpdateSepaMandatePayload): Promise<KanzenSepaMandate>;
     /**
+     * Add descendant accounts to the accounts a mandate covers.
+     * A site joining a signed mandate needs no new signature: Kanzen copies the IBAN/BIC.
+     */
+    addSepaMandateCoveredAccounts(mandateId: string, accountIds: string[]): Promise<KanzenSepaMandate>;
+    /**
+     * Remove an account from the accounts a mandate covers (never the debtor account)
+     */
+    removeSepaMandateCoveredAccount(mandateId: string, accountId: string): Promise<KanzenSepaMandate>;
+    /**
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
     verifyWebhookSignature(rawBody: string, signature: string): boolean;

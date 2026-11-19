@@ -294,8 +294,11 @@ const mandate = await kanzen.createSepaMandate(account.id, {
   iban: 'FR7630006000011234567890189',
   bic: 'AGRIFRPP',
   externalActor: 'Jane Doe',
+  label: 'Head office and sites',
+  // Descendants of the debtor account to cover as well (the debtor is always covered)
+  coveredAccountIds: [site.id],
 })
-// mandate.rum, mandate.status === 'PENDING'
+// mandate.rum, mandate.status === 'PENDING', mandate.coveredAccountIds === [account.id, site.id]
 
 // Download the PDF to sign (short-lived URL)
 const { url: pdfUrl } = await kanzen.getSepaMandatePdfUrl(mandate.id)
@@ -309,9 +312,33 @@ const { url: signedUrl } = await kanzen.getSignedSepaMandateUrl(mandate.id)
 // Update status ('SENT' | 'REJECTED' | 'REVOKED') or bank details.
 // SIGNED is set only by uploadSignedSepaMandate; a mandate never goes back to PENDING.
 await kanzen.updateSepaMandate(mandate.id, { status: 'REVOKED', externalActor: 'Jane Doe' })
+
+// Rename or clear the label
+await kanzen.updateSepaMandate(mandate.id, { label: null })
 ```
 
 A refused status change throws `Kanzen API Error (409): ...E_SEPA_MANDATE_TRANSITION...`; an unknown mandate or account throws `Kanzen API Error (404): ...`.
+
+### Covered accounts
+
+One mandate can cover the debtor account and its descendants (groups, sites). `coveredAccountIds` always holds the debtor account. An account can be covered by only one live mandate at a time.
+
+```ts
+// Add sites to a mandate
+const updated = await kanzen.addSepaMandateCoveredAccounts(mandate.id, [newSite.id])
+
+// Remove a site (the debtor account cannot be removed)
+await kanzen.removeSepaMandateCoveredAccount(mandate.id, newSite.id)
+```
+
+A site joining a signed mandate needs no new signature; Kanzen copies the IBAN/BIC to the site account.
+
+Errors, in the body of a `Kanzen API Error (422)`:
+
+| Code | Meaning |
+|------|---------|
+| `SEPA_MANDATE_NOT_DESCENDANT` | An account is not a descendant of the debtor account |
+| `SEPA_MANDATE_ACCOUNT_ALREADY_COVERED` | An account is already covered by another live mandate |
 
 ---
 

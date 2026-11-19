@@ -225,6 +225,19 @@ class KanzenClient {
         return (0, sepa_mandates_js_1.updateSepaMandate)(this, mandateId, payload);
     }
     /**
+     * Add descendant accounts to the accounts a mandate covers.
+     * A site joining a signed mandate needs no new signature: Kanzen copies the IBAN/BIC.
+     */
+    async addSepaMandateCoveredAccounts(mandateId, accountIds) {
+        return (0, sepa_mandates_js_1.addSepaMandateCoveredAccounts)(this, mandateId, accountIds);
+    }
+    /**
+     * Remove an account from the accounts a mandate covers (never the debtor account)
+     */
+    async removeSepaMandateCoveredAccount(mandateId, accountId) {
+        return (0, sepa_mandates_js_1.removeSepaMandateCoveredAccount)(this, mandateId, accountId);
+    }
+    /**
      * Verify HMAC-SHA256 signature for incoming webhooks
      */
     verifyWebhookSignature(rawBody, signature) {

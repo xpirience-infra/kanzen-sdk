@@ -9,6 +9,8 @@ import {
   uploadSignedSepaMandate,
   getSignedSepaMandateUrl,
   updateSepaMandate,
+  addSepaMandateCoveredAccounts,
+  removeSepaMandateCoveredAccount,
 } from "./features/sepa_mandates.js";
 import { verifyWebhookSignature } from "./features/webhook.js";
 import { handleIncomingWebhook, handleIncomingWebhookRaw } from "./features/webhook_handler.js";
@@ -302,6 +304,27 @@ export class KanzenClient {
     payload: KanzenUpdateSepaMandatePayload,
   ): Promise<KanzenSepaMandate> {
     return updateSepaMandate(this, mandateId, payload);
+  }
+
+  /**
+   * Add descendant accounts to the accounts a mandate covers.
+   * A site joining a signed mandate needs no new signature: Kanzen copies the IBAN/BIC.
+   */
+  async addSepaMandateCoveredAccounts(
+    mandateId: string,
+    accountIds: string[],
+  ): Promise<KanzenSepaMandate> {
+    return addSepaMandateCoveredAccounts(this, mandateId, accountIds);
+  }
+
+  /**
+   * Remove an account from the accounts a mandate covers (never the debtor account)
+   */
+  async removeSepaMandateCoveredAccount(
+    mandateId: string,
+    accountId: string,
+  ): Promise<KanzenSepaMandate> {
+    return removeSepaMandateCoveredAccount(this, mandateId, accountId);
   }
 
   /**

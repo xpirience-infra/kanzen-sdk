@@ -117,3 +117,35 @@ export async function updateSepaMandate(
     },
   );
 }
+
+/**
+ * Add descendant accounts to the accounts a mandate covers.
+ * On a SIGNED mandate, Kanzen copies the IBAN/BIC to the added accounts.
+ */
+export async function addSepaMandateCoveredAccounts(
+  client: KanzenClient,
+  mandateId: string,
+  accountIds: string[],
+): Promise<KanzenSepaMandate> {
+  return client.request<KanzenSepaMandate>(
+    `/sepa-mandates/${encodeURIComponent(mandateId)}/covered-accounts`,
+    {
+      method: "POST",
+      body: JSON.stringify({ accountIds }),
+    },
+  );
+}
+
+/**
+ * Remove an account from the accounts a mandate covers (never the debtor account)
+ */
+export async function removeSepaMandateCoveredAccount(
+  client: KanzenClient,
+  mandateId: string,
+  accountId: string,
+): Promise<KanzenSepaMandate> {
+  return client.request<KanzenSepaMandate>(
+    `/sepa-mandates/${encodeURIComponent(mandateId)}/covered-accounts/${encodeURIComponent(accountId)}`,
+    { method: "DELETE" },
+  );
+}

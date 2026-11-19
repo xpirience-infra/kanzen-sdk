@@ -24,3 +24,12 @@ export declare function getSignedSepaMandateUrl(client: KanzenClient, mandateId:
  * Update a mandate (status, bank details, external actor)
  */
 export declare function updateSepaMandate(client: KanzenClient, mandateId: string, payload: KanzenUpdateSepaMandatePayload): Promise<KanzenSepaMandate>;
+/**
+ * Add descendant accounts to the accounts a mandate covers.
+ * On a SIGNED mandate, Kanzen copies the IBAN/BIC to the added accounts.
+ */
+export declare function addSepaMandateCoveredAccounts(client: KanzenClient, mandateId: string, accountIds: string[]): Promise<KanzenSepaMandate>;
+/**
+ * Remove an account from the accounts a mandate covers (never the debtor account)
+ */
+export declare function removeSepaMandateCoveredAccount(client: KanzenClient, mandateId: string, accountId: string): Promise<KanzenSepaMandate>;
