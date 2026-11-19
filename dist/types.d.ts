@@ -266,6 +266,29 @@ export interface KanzenUpdateSepaMandatePayload {
     externalActor?: string;
     label?: string | null;
 }
+export type KanzenSepaSigningRequestStatus = 'OPEN' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
+/**
+ * A request sent to a contact to sign one or more mandates on a Kanzen-hosted page.
+ * The signing link is sent only by e-mail and never returned by the API.
+ */
+export interface KanzenSepaSigningRequest {
+    id: string;
+    contactId: string;
+    mandateIds: string[];
+    status: KanzenSepaSigningRequestStatus;
+    expiresAt: string;
+    sentAt: string | null;
+    completedAt: string | null;
+}
+export interface KanzenCreateSepaSigningRequestPayload {
+    /** Contact who signs; must be attached to each mandate's debtor account */
+    contactId: string;
+    mandateIds: string[];
+}
+export interface KanzenListSepaSigningRequestsFilter {
+    accountId?: string;
+    mandateId?: string;
+}
 /** Short-lived signed download URL */
 export interface KanzenSignedUrl {
     url: string;

@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getBetterAuthProviderConfig, getNextAuthProviderConfig } from "./features/auth.js";
-import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse, KanzenSepaMandate, KanzenCreateSepaMandatePayload, KanzenUpdateSepaMandatePayload, KanzenSignedUrl } from "./types.js";
+import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse, KanzenSepaMandate, KanzenCreateSepaMandatePayload, KanzenUpdateSepaMandatePayload, KanzenSepaSigningRequest, KanzenCreateSepaSigningRequestPayload, KanzenListSepaSigningRequestsFilter, KanzenSignedUrl } from "./types.js";
 export { getBetterAuthProviderConfig, getNextAuthProviderConfig };
 export declare class KanzenClient {
     private apiUrl;
@@ -113,6 +113,23 @@ export declare class KanzenClient {
      * Remove an account from the accounts a mandate covers (never the debtor account)
      */
     removeSepaMandateCoveredAccount(mandateId: string, accountId: string): Promise<KanzenSepaMandate>;
+    /**
+     * Send one or more mandates to a contact for signature.
+     * The contact gets one e-mail link to a Kanzen-hosted signing page.
+     */
+    createSepaSigningRequest(payload: KanzenCreateSepaSigningRequestPayload): Promise<KanzenSepaSigningRequest>;
+    /**
+     * List the signing requests of an account or of a mandate
+     */
+    listSepaSigningRequests(filter: KanzenListSepaSigningRequestsFilter): Promise<KanzenSepaSigningRequest[]>;
+    /**
+     * Send a new link for an open request (the previous link stops working)
+     */
+    resendSepaSigningRequest(requestId: string): Promise<KanzenSepaSigningRequest>;
+    /**
+     * Cancel an open request (its link stops working)
+     */
+    cancelSepaSigningRequest(requestId: string): Promise<KanzenSepaSigningRequest>;
     /**
      * Verify HMAC-SHA256 signature for incoming webhooks
      */

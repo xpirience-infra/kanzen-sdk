@@ -6,6 +6,7 @@ const accounts_js_1 = require("./features/accounts.js");
 const locks_js_1 = require("./features/locks.js");
 const contacts_js_1 = require("./features/contacts.js");
 const sepa_mandates_js_1 = require("./features/sepa_mandates.js");
+const sepa_signing_requests_js_1 = require("./features/sepa_signing_requests.js");
 const webhook_js_1 = require("./features/webhook.js");
 const webhook_handler_js_1 = require("./features/webhook_handler.js");
 const auth_js_1 = require("./features/auth.js");
@@ -236,6 +237,31 @@ class KanzenClient {
      */
     async removeSepaMandateCoveredAccount(mandateId, accountId) {
         return (0, sepa_mandates_js_1.removeSepaMandateCoveredAccount)(this, mandateId, accountId);
+    }
+    /**
+     * Send one or more mandates to a contact for signature.
+     * The contact gets one e-mail link to a Kanzen-hosted signing page.
+     */
+    async createSepaSigningRequest(payload) {
+        return (0, sepa_signing_requests_js_1.createSepaSigningRequest)(this, payload);
+    }
+    /**
+     * List the signing requests of an account or of a mandate
+     */
+    async listSepaSigningRequests(filter) {
+        return (0, sepa_signing_requests_js_1.listSepaSigningRequests)(this, filter);
+    }
+    /**
+     * Send a new link for an open request (the previous link stops working)
+     */
+    async resendSepaSigningRequest(requestId) {
+        return (0, sepa_signing_requests_js_1.resendSepaSigningRequest)(this, requestId);
+    }
+    /**
+     * Cancel an open request (its link stops working)
+     */
+    async cancelSepaSigningRequest(requestId) {
+        return (0, sepa_signing_requests_js_1.cancelSepaSigningRequest)(this, requestId);
     }
     /**
      * Verify HMAC-SHA256 signature for incoming webhooks

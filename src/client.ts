@@ -12,6 +12,12 @@ import {
   addSepaMandateCoveredAccounts,
   removeSepaMandateCoveredAccount,
 } from "./features/sepa_mandates.js";
+import {
+  createSepaSigningRequest,
+  listSepaSigningRequests,
+  resendSepaSigningRequest,
+  cancelSepaSigningRequest,
+} from "./features/sepa_signing_requests.js";
 import { verifyWebhookSignature } from "./features/webhook.js";
 import { handleIncomingWebhook, handleIncomingWebhookRaw } from "./features/webhook_handler.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -33,6 +39,9 @@ import type {
   KanzenSepaMandate,
   KanzenCreateSepaMandatePayload,
   KanzenUpdateSepaMandatePayload,
+  KanzenSepaSigningRequest,
+  KanzenCreateSepaSigningRequestPayload,
+  KanzenListSepaSigningRequestsFilter,
   KanzenSignedUrl,
 } from "./types.js";
 
@@ -325,6 +334,39 @@ export class KanzenClient {
     accountId: string,
   ): Promise<KanzenSepaMandate> {
     return removeSepaMandateCoveredAccount(this, mandateId, accountId);
+  }
+
+  /**
+   * Send one or more mandates to a contact for signature.
+   * The contact gets one e-mail link to a Kanzen-hosted signing page.
+   */
+  async createSepaSigningRequest(
+    payload: KanzenCreateSepaSigningRequestPayload,
+  ): Promise<KanzenSepaSigningRequest> {
+    return createSepaSigningRequest(this, payload);
+  }
+
+  /**
+   * List the signing requests of an account or of a mandate
+   */
+  async listSepaSigningRequests(
+    filter: KanzenListSepaSigningRequestsFilter,
+  ): Promise<KanzenSepaSigningRequest[]> {
+    return listSepaSigningRequests(this, filter);
+  }
+
+  /**
+   * Send a new link for an open request (the previous link stops working)
+   */
+  async resendSepaSigningRequest(requestId: string): Promise<KanzenSepaSigningRequest> {
+    return resendSepaSigningRequest(this, requestId);
+  }
+
+  /**
+   * Cancel an open request (its link stops working)
+   */
+  async cancelSepaSigningRequest(requestId: string): Promise<KanzenSepaSigningRequest> {
+    return cancelSepaSigningRequest(this, requestId);
   }
 
   /**

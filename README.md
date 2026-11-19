@@ -340,6 +340,44 @@ Errors, in the body of a `Kanzen API Error (422)`:
 | `SEPA_MANDATE_NOT_DESCENDANT` | An account is not a descendant of the debtor account |
 | `SEPA_MANDATE_ACCOUNT_ALREADY_COVERED` | An account is already covered by another live mandate |
 
+### Signing requests
+
+The debtor can sign mandates online instead of uploading a signed copy:
+
+1. Create the mandates (`createSepaMandate`).
+2. Create one signing request per signer, with all the mandates that signer signs.
+3. Kanzen marks the mandates `SENT` and e-mails the contact one link.
+4. The contact signs on a page hosted by Kanzen. The mandates become `SIGNED`, the request becomes `COMPLETED`, and Kanzen sends the `sepa_mandate.signed` webhook for each mandate.
+
+The link is sent only by e-mail. The API never returns it.
+
+```ts
+const request = await kanzen.createSepaSigningRequest({
+  contactId: contact.id, // must be attached to each mandate's debtor account
+  mandateIds: [mandateA.id, mandateB.id],
+})
+// request.status === 'OPEN', request.expiresAt
+
+// Requests of an account or of a mandate
+const requests = await kanzen.listSepaSigningRequests({ accountId: account.id })
+const forMandate = await kanzen.listSepaSigningRequests({ mandateId: mandateA.id })
+
+// Send a new link (the previous link stops working, the expiry is reset)
+await kanzen.resendSepaSigningRequest(request.id)
+
+// Cancel (the link stops working)
+await kanzen.cancelSepaSigningRequest(request.id)
+```
+
+Request statuses: `OPEN`, `COMPLETED`, `EXPIRED`, `CANCELLED`.
+
+Errors, in the body of a `Kanzen API Error (422)`:
+
+| Code | Meaning |
+|------|---------|
+| `SEPA_SIGNING_CONTACT_NOT_ATTACHED` | The contact is not attached to a mandate's debtor account |
+| `SEPA_SIGNING_ALREADY_OPEN` | A mandate already has an open signing request |
+
 ---
 
 ## OAuth Helpers
@@ -419,6 +457,10 @@ if (!isValid) {
 | `KanzenSepaMandateScheme` | `'B2B' \| 'CORE'` |
 | `KanzenCreateSepaMandatePayload` | Payload for creating a SEPA mandate |
 | `KanzenUpdateSepaMandatePayload` | Payload for updating a SEPA mandate (`status`: `'SENT' \| 'REJECTED' \| 'REVOKED'`) |
+| `KanzenSepaSigningRequest` | SEPA signing request (`id`, `contactId`, `mandateIds`, `status`, `expiresAt`, `sentAt`, `completedAt`) |
+| `KanzenSepaSigningRequestStatus` | `'OPEN' \| 'COMPLETED' \| 'EXPIRED' \| 'CANCELLED'` |
+| `KanzenCreateSepaSigningRequestPayload` | `{ contactId, mandateIds }` |
+| `KanzenListSepaSigningRequestsFilter` | `{ accountId?, mandateId? }` |
 | `KanzenSignedUrl` | `{ url }` short-lived download URL |
 | `KanzenOAuthConfigOptions` | OAuth helper configuration |
 | `KanzenDebugLevel` | `'none' \| 'info' \| 'verbose' \| 'trace'` |
