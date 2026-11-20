@@ -362,6 +362,7 @@ export interface KanzenCreateSepaSigningRequestPayload {
 export interface KanzenListSepaSigningRequestsFilter {
   accountId?: string
   mandateId?: string
+  status?: KanzenSepaSigningRequestStatus
 }
 
 /** Short-lived signed download URL */

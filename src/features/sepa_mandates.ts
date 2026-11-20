@@ -90,14 +90,20 @@ export async function uploadSignedSepaMandate(
 }
 
 /**
- * Get a short-lived URL to download the signed copy of a mandate
+ * Get a short-lived URL to download the signed copy of a mandate.
+ * With `options.accountId`, a covered account (a site) opens its parent's signed mandate
+ * with its own rights; Kanzen returns 422 if the mandate does not cover that account.
  */
 export async function getSignedSepaMandateUrl(
   client: KanzenClient,
   mandateId: string,
+  options?: { accountId?: string },
 ): Promise<KanzenSignedUrl> {
+  const query = options?.accountId
+    ? `?accountId=${encodeURIComponent(options.accountId)}`
+    : "";
   return client.request<KanzenSignedUrl>(
-    `/sepa-mandates/${encodeURIComponent(mandateId)}/signed-url`,
+    `/sepa-mandates/${encodeURIComponent(mandateId)}/signed-url${query}`,
   );
 }
 

@@ -311,6 +311,9 @@ const signed = await kanzen.uploadSignedSepaMandate(mandate.id, fileBuffer, 'man
 // Download the signed copy (short-lived URL)
 const { url: signedUrl } = await kanzen.getSignedSepaMandateUrl(mandate.id)
 
+// A covered account (a site) opens its parent's signed mandate with its own rights (422 if the mandate does not cover it)
+const { url: siteUrl } = await kanzen.getSignedSepaMandateUrl(mandate.id, { accountId: site.id })
+
 // Update status ('SENT' | 'REJECTED' | 'REVOKED') or bank details.
 // SIGNED is set only by uploadSignedSepaMandate; a mandate never goes back to PENDING.
 await kanzen.updateSepaMandate(mandate.id, { status: 'REVOKED', externalActor: 'Jane Doe' })
@@ -363,6 +366,9 @@ const request = await kanzen.createSepaSigningRequest({
 // Requests of an account or of a mandate
 const requests = await kanzen.listSepaSigningRequests({ accountId: account.id })
 const forMandate = await kanzen.listSepaSigningRequests({ mandateId: mandateA.id })
+
+// Filter by status ('OPEN' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED')
+const open = await kanzen.listSepaSigningRequests({ accountId: account.id, status: 'OPEN' })
 
 // Send a new link (the previous link stops working, the expiry is reset)
 await kanzen.resendSepaSigningRequest(request.id)
@@ -463,7 +469,7 @@ if (!isValid) {
 | `KanzenSepaSigningRequest` | SEPA signing request (`id`, `contactId`, `mandateIds`, `status`, `expiresAt`, `sentAt`, `completedAt`) |
 | `KanzenSepaSigningRequestStatus` | `'OPEN' \| 'COMPLETED' \| 'EXPIRED' \| 'CANCELLED'` |
 | `KanzenCreateSepaSigningRequestPayload` | `{ contactId, mandateIds }` |
-| `KanzenListSepaSigningRequestsFilter` | `{ accountId?, mandateId? }` |
+| `KanzenListSepaSigningRequestsFilter` | `{ accountId?, mandateId?, status? }` |
 | `KanzenSignedUrl` | `{ url }` short-lived download URL |
 | `KanzenOAuthConfigOptions` | OAuth helper configuration |
 | `KanzenDebugLevel` | `'none' \| 'info' \| 'verbose' \| 'trace'` |

@@ -23,6 +23,8 @@ async function listSepaSigningRequests(client, filter) {
         params.set("accountId", filter.accountId);
     if (filter.mandateId)
         params.set("mandateId", filter.mandateId);
+    if (filter.status)
+        params.set("status", filter.status);
     const query = params.toString();
     return client.request(`/sepa-signing-requests${query ? `?${query}` : ""}`);
 }

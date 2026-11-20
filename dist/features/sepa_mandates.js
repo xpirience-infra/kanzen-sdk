@@ -57,10 +57,15 @@ async function uploadSignedSepaMandate(client, mandateId, file, filename, extern
     });
 }
 /**
- * Get a short-lived URL to download the signed copy of a mandate
+ * Get a short-lived URL to download the signed copy of a mandate.
+ * With `options.accountId`, a covered account (a site) opens its parent's signed mandate
+ * with its own rights; Kanzen returns 422 if the mandate does not cover that account.
  */
-async function getSignedSepaMandateUrl(client, mandateId) {
-    return client.request(`/sepa-mandates/${encodeURIComponent(mandateId)}/signed-url`);
+async function getSignedSepaMandateUrl(client, mandateId, options) {
+    const query = options?.accountId
+        ? `?accountId=${encodeURIComponent(options.accountId)}`
+        : "";
+    return client.request(`/sepa-mandates/${encodeURIComponent(mandateId)}/signed-url${query}`);
 }
 /**
  * Update a mandate (status, bank details, external actor)

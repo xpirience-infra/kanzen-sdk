@@ -17,9 +17,13 @@ export declare function getSepaMandatePdfUrl(client: KanzenClient, mandateId: st
  */
 export declare function uploadSignedSepaMandate(client: KanzenClient, mandateId: string, file: Buffer | Blob, filename: string, externalActor?: string): Promise<KanzenSepaMandate>;
 /**
- * Get a short-lived URL to download the signed copy of a mandate
+ * Get a short-lived URL to download the signed copy of a mandate.
+ * With `options.accountId`, a covered account (a site) opens its parent's signed mandate
+ * with its own rights; Kanzen returns 422 if the mandate does not cover that account.
  */
-export declare function getSignedSepaMandateUrl(client: KanzenClient, mandateId: string): Promise<KanzenSignedUrl>;
+export declare function getSignedSepaMandateUrl(client: KanzenClient, mandateId: string, options?: {
+    accountId?: string;
+}): Promise<KanzenSignedUrl>;
 /**
  * Update a mandate (status, bank details, external actor)
  */

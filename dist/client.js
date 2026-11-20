@@ -214,10 +214,12 @@ class KanzenClient {
         return (0, sepa_mandates_js_1.uploadSignedSepaMandate)(this, mandateId, file, filename, externalActor);
     }
     /**
-     * Get a short-lived URL to download the signed copy of a mandate
+     * Get a short-lived URL to download the signed copy of a mandate.
+     * With `options.accountId`, a covered account (a site) opens its parent's signed mandate
+     * with its own rights; Kanzen returns 422 if the mandate does not cover that account.
      */
-    async getSignedSepaMandateUrl(mandateId) {
-        return (0, sepa_mandates_js_1.getSignedSepaMandateUrl)(this, mandateId);
+    async getSignedSepaMandateUrl(mandateId, options) {
+        return (0, sepa_mandates_js_1.getSignedSepaMandateUrl)(this, mandateId, options);
     }
     /**
      * Update a mandate (status, bank details, external actor)

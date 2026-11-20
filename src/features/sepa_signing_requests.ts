@@ -29,6 +29,7 @@ export async function listSepaSigningRequests(
   const params = new URLSearchParams();
   if (filter.accountId) params.set("accountId", filter.accountId);
   if (filter.mandateId) params.set("mandateId", filter.mandateId);
+  if (filter.status) params.set("status", filter.status);
   const query = params.toString();
 
   return client.request<KanzenSepaSigningRequest[]>(
