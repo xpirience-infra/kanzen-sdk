@@ -1,6 +1,25 @@
 # Changelog
 
 
+## v2.2.0
+
+[compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v2.1.0...v2.2.0)
+
+### 🚀 Enhancements
+
+- **sepa-mandates:** Label and covered accounts ([db69ff8](https://github.com/xpirience-infra/kanzen-sdk/commit/db69ff8))
+- **sepa-signing:** Signing requests ([42f279a](https://github.com/xpirience-infra/kanzen-sdk/commit/42f279a))
+- **webhooks:** Sepa_mandate.signed event ([affd2d9](https://github.com/xpirience-infra/kanzen-sdk/commit/affd2d9))
+- **sepa:** AccountId on signed-url, status filter on signing requests ([c9e567a](https://github.com/xpirience-infra/kanzen-sdk/commit/c9e567a))
+
+### 📖 Documentation
+
+- **sepa-signing:** Design and plan for SDK 2.2.0 ([a965f87](https://github.com/xpirience-infra/kanzen-sdk/commit/a965f87))
+
+### ❤️ Contributors
+
+- Tristan SCHWENK <tristan.schwenk@ezyostudio.com>
+
 ## v2.1.0
 
 [compare changes](https://github.com/xpirience-infra/kanzen-sdk/compare/v2.0.0...v2.1.0)
