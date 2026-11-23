@@ -86,7 +86,7 @@ export async function updateProject(
   payload: KanzenUpdateProjectPayload,
 ): Promise<KanzenProject> {
   return client.request<KanzenProject>(`/projects/${encodeURIComponent(id)}`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify(payload),
   });
 }

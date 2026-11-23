@@ -58,7 +58,7 @@ async function createProject(client, payload) {
  */
 async function updateProject(client, id, payload) {
     return client.request(`/projects/${encodeURIComponent(id)}`, {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify(payload),
     });
 }
