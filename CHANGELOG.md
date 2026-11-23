@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.3.0
+
+### 🚀 Enhancements
+
+- **projects:** `listPaymentMethods`, `listProjectStatuses`, `listProjectInvoicingTypes`, `createProject`, `updateProject`, `getProject`, with milestones
+
 
 ## v2.2.0
 

@@ -388,6 +388,34 @@ Errors, in the body of a `Kanzen API Error (422)`:
 
 ---
 
+## Outbound API — Projects
+
+Create projects with milestones and look up the reference data they need. The list methods read every page and return a plain array.
+
+```ts
+const [method] = await kanzen.listPaymentMethods({ value: 'SEPA_DEBIT' })
+const [status] = await kanzen.listProjectStatuses({ value: 'IN_PROGRESS' })
+const invoicingTypes = await kanzen.listProjectInvoicingTypes()
+
+const project = await kanzen.createProject({
+  name: 'Brokerage 2026',
+  accountId: account.id,
+  statusId: status.id,
+  paymentMethodId: method.id,
+})
+
+// Only the fields given are sent
+await kanzen.updateProject(project.id, {
+  milestones: {
+    create: [{ name: 'Q1', invoicingDate: '2026-03-31', quantity: 1, unitPrice: 1200 }],
+  },
+})
+
+const full = await kanzen.getProject(project.id) // milestones is optional
+```
+
+---
+
 ## OAuth Helpers
 
 For integrating Kanzen as an OAuth / OIDC provider.
