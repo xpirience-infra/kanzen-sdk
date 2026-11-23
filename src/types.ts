@@ -369,3 +369,72 @@ export interface KanzenListSepaSigningRequestsFilter {
 export interface KanzenSignedUrl {
   url: string
 }
+
+export interface KanzenPaymentMethod {
+  id: string
+  name: string
+  value: string
+}
+
+export interface KanzenProjectStatus {
+  id: string
+  name: string
+  value: string
+}
+
+export interface KanzenProjectInvoicingType {
+  id: string
+  name: string
+  value: string
+  /** True when projects of this type are invoiced by milestones */
+  milestones: boolean
+}
+
+export interface KanzenProjectMilestoneInput {
+  name: string
+  /** YYYY-MM-DD */
+  invoicingDate: string
+  quantity: number
+  unitPrice: number
+  currencyId?: string
+  description?: string
+}
+
+export interface KanzenProjectMilestone extends KanzenProjectMilestoneInput {
+  id: string
+  projectId: string
+}
+
+export interface KanzenCreateProjectPayload {
+  name: string
+  accountId: string
+  statusId: string
+  categoryId?: string
+  projectInvoicingTypeId?: string
+  paymentMethodId?: string | null
+  startDate?: string
+  endDate?: string
+  year?: number
+  currencyId?: string
+}
+
+export type KanzenUpdateProjectPayload = Partial<KanzenCreateProjectPayload> & {
+  milestones?: {
+    create?: KanzenProjectMilestoneInput[]
+    update?: (Partial<KanzenProjectMilestoneInput> & { id: string })[]
+    delete?: string[]
+  }
+}
+
+export interface KanzenProject {
+  id: string
+  name: string
+  projectCode: string
+  accountId: string
+  statusId: string
+  paymentMethodId: string | null
+  currencyId: string | null
+  startDate: string | null
+  endDate: string | null
+  milestones?: KanzenProjectMilestone[]
+}

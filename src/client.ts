@@ -18,6 +18,14 @@ import {
   resendSepaSigningRequest,
   cancelSepaSigningRequest,
 } from "./features/sepa_signing_requests.js";
+import {
+  listPaymentMethods,
+  listProjectStatuses,
+  listProjectInvoicingTypes,
+  createProject,
+  updateProject,
+  getProject,
+} from "./features/projects.js";
 import { verifyWebhookSignature } from "./features/webhook.js";
 import { handleIncomingWebhook, handleIncomingWebhookRaw } from "./features/webhook_handler.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -43,6 +51,12 @@ import type {
   KanzenCreateSepaSigningRequestPayload,
   KanzenListSepaSigningRequestsFilter,
   KanzenSignedUrl,
+  KanzenPaymentMethod,
+  KanzenProjectStatus,
+  KanzenProjectInvoicingType,
+  KanzenProject,
+  KanzenCreateProjectPayload,
+  KanzenUpdateProjectPayload,
 } from "./types.js";
 
 // Re-export standalone configuration helper functions
@@ -435,6 +449,48 @@ export class KanzenClient {
       );
     }
     return handleIncomingWebhookRaw(this, rawBody, signature, res);
+  }
+
+  /**
+   * List the payment methods, optionally filtered by value
+   */
+  async listPaymentMethods(filter?: { value?: string }): Promise<KanzenPaymentMethod[]> {
+    return listPaymentMethods(this, filter);
+  }
+
+  /**
+   * List the project statuses, optionally filtered by value
+   */
+  async listProjectStatuses(filter?: { value?: string }): Promise<KanzenProjectStatus[]> {
+    return listProjectStatuses(this, filter);
+  }
+
+  /**
+   * List the project invoicing types
+   */
+  async listProjectInvoicingTypes(): Promise<KanzenProjectInvoicingType[]> {
+    return listProjectInvoicingTypes(this);
+  }
+
+  /**
+   * Create a project
+   */
+  async createProject(payload: KanzenCreateProjectPayload): Promise<KanzenProject> {
+    return createProject(this, payload);
+  }
+
+  /**
+   * Update a project and its milestones (only the fields given are sent)
+   */
+  async updateProject(id: string, payload: KanzenUpdateProjectPayload): Promise<KanzenProject> {
+    return updateProject(this, id, payload);
+  }
+
+  /**
+   * Get a project, with its milestones when it has some
+   */
+  async getProject(id: string): Promise<KanzenProject> {
+    return getProject(this, id);
   }
 
   /**

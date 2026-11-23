@@ -7,6 +7,7 @@ const locks_js_1 = require("./features/locks.js");
 const contacts_js_1 = require("./features/contacts.js");
 const sepa_mandates_js_1 = require("./features/sepa_mandates.js");
 const sepa_signing_requests_js_1 = require("./features/sepa_signing_requests.js");
+const projects_js_1 = require("./features/projects.js");
 const webhook_js_1 = require("./features/webhook.js");
 const webhook_handler_js_1 = require("./features/webhook_handler.js");
 const auth_js_1 = require("./features/auth.js");
@@ -320,6 +321,42 @@ class KanzenClient {
                 "Pass it in KanzenClientOptions when creating the client.");
         }
         return (0, webhook_handler_js_1.handleIncomingWebhookRaw)(this, rawBody, signature, res);
+    }
+    /**
+     * List the payment methods, optionally filtered by value
+     */
+    async listPaymentMethods(filter) {
+        return (0, projects_js_1.listPaymentMethods)(this, filter);
+    }
+    /**
+     * List the project statuses, optionally filtered by value
+     */
+    async listProjectStatuses(filter) {
+        return (0, projects_js_1.listProjectStatuses)(this, filter);
+    }
+    /**
+     * List the project invoicing types
+     */
+    async listProjectInvoicingTypes() {
+        return (0, projects_js_1.listProjectInvoicingTypes)(this);
+    }
+    /**
+     * Create a project
+     */
+    async createProject(payload) {
+        return (0, projects_js_1.createProject)(this, payload);
+    }
+    /**
+     * Update a project and its milestones (only the fields given are sent)
+     */
+    async updateProject(id, payload) {
+        return (0, projects_js_1.updateProject)(this, id, payload);
+    }
+    /**
+     * Get a project, with its milestones when it has some
+     */
+    async getProject(id) {
+        return (0, projects_js_1.getProject)(this, id);
     }
     /**
      * Generates the URL to redirect users to in order to start the OAuth flow.

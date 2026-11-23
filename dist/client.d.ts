@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getBetterAuthProviderConfig, getNextAuthProviderConfig } from "./features/auth.js";
-import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse, KanzenSepaMandate, KanzenCreateSepaMandatePayload, KanzenUpdateSepaMandatePayload, KanzenSepaSigningRequest, KanzenCreateSepaSigningRequestPayload, KanzenListSepaSigningRequestsFilter, KanzenSignedUrl } from "./types.js";
+import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse, KanzenSepaMandate, KanzenCreateSepaMandatePayload, KanzenUpdateSepaMandatePayload, KanzenSepaSigningRequest, KanzenCreateSepaSigningRequestPayload, KanzenListSepaSigningRequestsFilter, KanzenSignedUrl, KanzenPaymentMethod, KanzenProjectStatus, KanzenProjectInvoicingType, KanzenProject, KanzenCreateProjectPayload, KanzenUpdateProjectPayload } from "./types.js";
 export { getBetterAuthProviderConfig, getNextAuthProviderConfig };
 export declare class KanzenClient {
     private apiUrl;
@@ -176,6 +176,34 @@ export declare class KanzenClient {
      * ```
      */
     handleRaw(rawBody: string, signature: string, res: ServerResponse): Promise<void>;
+    /**
+     * List the payment methods, optionally filtered by value
+     */
+    listPaymentMethods(filter?: {
+        value?: string;
+    }): Promise<KanzenPaymentMethod[]>;
+    /**
+     * List the project statuses, optionally filtered by value
+     */
+    listProjectStatuses(filter?: {
+        value?: string;
+    }): Promise<KanzenProjectStatus[]>;
+    /**
+     * List the project invoicing types
+     */
+    listProjectInvoicingTypes(): Promise<KanzenProjectInvoicingType[]>;
+    /**
+     * Create a project
+     */
+    createProject(payload: KanzenCreateProjectPayload): Promise<KanzenProject>;
+    /**
+     * Update a project and its milestones (only the fields given are sent)
+     */
+    updateProject(id: string, payload: KanzenUpdateProjectPayload): Promise<KanzenProject>;
+    /**
+     * Get a project, with its milestones when it has some
+     */
+    getProject(id: string): Promise<KanzenProject>;
     /**
      * Generates the URL to redirect users to in order to start the OAuth flow.
      */
