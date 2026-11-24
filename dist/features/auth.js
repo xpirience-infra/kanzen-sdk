@@ -4,6 +4,7 @@ exports.getOAuthAuthorizationUrl = getOAuthAuthorizationUrl;
 exports.exchangeOAuthCodeForProfile = exchangeOAuthCodeForProfile;
 exports.getBetterAuthProviderConfig = getBetterAuthProviderConfig;
 exports.getNextAuthProviderConfig = getNextAuthProviderConfig;
+const errors_js_1 = require("../errors.js");
 /**
  * Generates the URL to redirect users to in order to start the OAuth flow.
  */
@@ -35,17 +36,20 @@ async function exchangeOAuthCodeForProfile(client, params) {
         searchParams.set("client_secret", params.clientSecret);
     }
     client.log("verbose", "Exchanging code at token endpoint", { tokenUrl });
-    const tokenResponse = await fetch(tokenUrl, {
+    const tokenResponse = await client.fetchWithTimeout(tokenUrl, {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
         },
         body: searchParams.toString(),
-    });
+    }, "POST /api/auth/oauth2/token");
     if (!tokenResponse.ok) {
         const errText = await tokenResponse.text().catch(() => "Unknown error");
         client.log("info", `OAuth token exchange failed - Status: ${tokenResponse.status}`);
-        throw new Error(`OAuth token exchange failed (${tokenResponse.status}): ${errText}`);
+        throw new errors_js_1.KanzenApiError(`OAuth token exchange failed (${tokenResponse.status}): ${errText}`, {
+            status: tokenResponse.status,
+            body: (0, errors_js_1.parseErrorBody)(errText),
+        });
     }
     const tokenData = (await tokenResponse.json());
     const accessToken = tokenData.access_token;
@@ -56,16 +60,19 @@ async function exchangeOAuthCodeForProfile(client, params) {
     // Now fetch user info
     const userInfoUrl = `${client.getApiUrl()}/api/auth/oauth2/userinfo`;
     client.log("verbose", "Fetching profile from userinfo endpoint", { userInfoUrl });
-    const userInfoResponse = await fetch(userInfoUrl, {
+    const userInfoResponse = await client.fetchWithTimeout(userInfoUrl, {
         method: "GET",
         headers: {
             Authorization: `Bearer ${accessToken}`,
         },
-    });
+    }, "GET /api/auth/oauth2/userinfo");
     if (!userInfoResponse.ok) {
         const errText = await userInfoResponse.text().catch(() => "Unknown error");
         client.log("info", `Failed to fetch userinfo - Status: ${userInfoResponse.status}`);
-        throw new Error(`Failed to fetch userinfo (${userInfoResponse.status}): ${errText}`);
+        throw new errors_js_1.KanzenApiError(`Failed to fetch userinfo (${userInfoResponse.status}): ${errText}`, {
+            status: userInfoResponse.status,
+            body: (0, errors_js_1.parseErrorBody)(errText),
+        });
     }
     const profile = await userInfoResponse.json();
     client.log("verbose", "Successfully retrieved and parsed user profile", { email: profile.email });

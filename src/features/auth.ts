@@ -1,5 +1,6 @@
 import type { GenericOAuthConfig } from "better-auth/plugins/generic-oauth";
 import type { KanzenClient } from "../client.js";
+import { KanzenApiError, parseErrorBody } from "../errors.js";
 import type {
   KanzenOAuthConfigOptions,
   NextAuthCustomProviderConfig,
@@ -55,18 +56,21 @@ export async function exchangeOAuthCodeForProfile(
   }
 
   client.log("verbose", "Exchanging code at token endpoint", { tokenUrl });
-  const tokenResponse = await fetch(tokenUrl, {
+  const tokenResponse = await client.fetchWithTimeout(tokenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: searchParams.toString(),
-  });
+  }, "POST /api/auth/oauth2/token");
 
   if (!tokenResponse.ok) {
     const errText = await tokenResponse.text().catch(() => "Unknown error");
     client.log("info", `OAuth token exchange failed - Status: ${tokenResponse.status}`);
-    throw new Error(`OAuth token exchange failed (${tokenResponse.status}): ${errText}`);
+    throw new KanzenApiError(`OAuth token exchange failed (${tokenResponse.status}): ${errText}`, {
+      status: tokenResponse.status,
+      body: parseErrorBody(errText),
+    });
   }
 
   const tokenData = (await tokenResponse.json()) as { access_token?: string };
@@ -79,17 +83,20 @@ export async function exchangeOAuthCodeForProfile(
   // Now fetch user info
   const userInfoUrl = `${client.getApiUrl()}/api/auth/oauth2/userinfo`;
   client.log("verbose", "Fetching profile from userinfo endpoint", { userInfoUrl });
-  const userInfoResponse = await fetch(userInfoUrl, {
+  const userInfoResponse = await client.fetchWithTimeout(userInfoUrl, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-  });
+  }, "GET /api/auth/oauth2/userinfo");
 
   if (!userInfoResponse.ok) {
     const errText = await userInfoResponse.text().catch(() => "Unknown error");
     client.log("info", `Failed to fetch userinfo - Status: ${userInfoResponse.status}`);
-    throw new Error(`Failed to fetch userinfo (${userInfoResponse.status}): ${errText}`);
+    throw new KanzenApiError(`Failed to fetch userinfo (${userInfoResponse.status}): ${errText}`, {
+      status: userInfoResponse.status,
+      body: parseErrorBody(errText),
+    });
   }
 
   const profile = await userInfoResponse.json();

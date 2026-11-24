@@ -5,6 +5,7 @@
 ### 🚀 Enhancements
 
 - **projects:** `listPaymentMethods`, `listProjectStatuses`, `listProjectInvoicingTypes`, `createProject`, `updateProject`, `getProject`, with milestones
+- **client:** `timeoutMs` option (30000 ms by default) and a typed `KanzenApiError` (`status`, `code`, `body`); HTTP error messages are unchanged
 
 
 ## v2.2.0

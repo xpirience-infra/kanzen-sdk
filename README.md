@@ -51,6 +51,9 @@ interface KanzenClientOptions {
   /** API key for authenticating outbound requests */
   apiKey: string
 
+  /** Request timeout in milliseconds. Default 30000. */
+  timeoutMs?: number
+
   /**
    * HMAC-SHA256 shared secret used to verify inbound webhook signatures.
    * Required when using client.handle().
@@ -413,6 +416,33 @@ await kanzen.updateProject(project.id, {
 
 const full = await kanzen.getProject(project.id) // milestones is optional
 ```
+
+---
+
+## Errors and timeout
+
+Every request stops after `timeoutMs` (30000 ms by default). The client throws a `KanzenApiError` (a subclass of `Error`) for every non-2xx response and every network failure:
+
+```ts
+class KanzenApiError extends Error {
+  readonly status: number | null      // HTTP status, null when no response came back
+  readonly code?: 'TIMEOUT' | 'NETWORK'
+  readonly body?: unknown             // parsed JSON, or the raw text
+}
+```
+
+```ts
+import { KanzenApiError } from '@xpirience-infra/kanzen-sdk'
+
+try {
+  await kanzen.getProject(id)
+} catch (e) {
+  if (e instanceof KanzenApiError && e.status === 404) { /* not found */ }
+  if (e instanceof KanzenApiError && e.code === 'TIMEOUT') { /* retry later */ }
+}
+```
+
+The message of an HTTP error is unchanged: `Kanzen API Error (404): <response text>`.
 
 ---
 

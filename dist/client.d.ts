@@ -31,6 +31,12 @@ export declare class KanzenClient {
      */
     log(level: "info" | "verbose" | "trace", message: string, meta?: any): void;
     /**
+     * fetch with the client timeout (`timeoutMs`, 30000 by default), combined with the caller's
+     * signal if any. A timeout or a network failure throws a KanzenApiError.
+     * @internal
+     */
+    fetchWithTimeout(url: string, init: RequestInit, label: string): Promise<Response>;
+    /**
      * Helper to make authenticated HTTP requests to Kanzen API
      * @internal
      */

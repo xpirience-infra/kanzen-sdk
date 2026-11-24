@@ -8,6 +8,7 @@ const contacts_js_1 = require("./features/contacts.js");
 const sepa_mandates_js_1 = require("./features/sepa_mandates.js");
 const sepa_signing_requests_js_1 = require("./features/sepa_signing_requests.js");
 const projects_js_1 = require("./features/projects.js");
+const errors_js_1 = require("./errors.js");
 const webhook_js_1 = require("./features/webhook.js");
 const webhook_handler_js_1 = require("./features/webhook_handler.js");
 const auth_js_1 = require("./features/auth.js");
@@ -73,6 +74,37 @@ class KanzenClient {
         }
     }
     /**
+     * fetch with the client timeout (`timeoutMs`, 30000 by default), combined with the caller's
+     * signal if any. A timeout or a network failure throws a KanzenApiError.
+     * @internal
+     */
+    async fetchWithTimeout(url, init, label) {
+        const timeoutMs = this.options.timeoutMs ?? 30000;
+        const timeoutSignal = AbortSignal.timeout(timeoutMs);
+        const signal = init.signal
+            ? AbortSignal.any([init.signal, timeoutSignal])
+            : timeoutSignal;
+        try {
+            return await fetch(url, { ...init, signal });
+        }
+        catch (e) {
+            this.log("info", `Request failed: ${label} - Error: ${e?.message}`);
+            if (timeoutSignal.aborted) {
+                throw new errors_js_1.KanzenApiError(`Kanzen API timeout after ${timeoutMs} ms (${label})`, {
+                    status: null,
+                    code: "TIMEOUT",
+                });
+            }
+            // Aborted by the caller's own signal: not a network failure, pass it through
+            if (init.signal?.aborted)
+                throw e;
+            throw new errors_js_1.KanzenApiError(`Kanzen API network error (${label}): ${e?.message}`, {
+                status: null,
+                code: "NETWORK",
+            });
+        }
+    }
+    /**
      * Helper to make authenticated HTTP requests to Kanzen API
      * @internal
      */
@@ -92,22 +124,15 @@ class KanzenClient {
             bodyLength: isFormData ? "multipart" : options.body ? String(options.body).length : 0,
         });
         this.log("trace", `Request body payload`, { body: options.body });
-        let response;
-        try {
-            response = await fetch(url, {
-                ...options,
-                headers,
-            });
-        }
-        catch (e) {
-            this.log("info", `Request failed: ${method} ${path} - Error: ${e.message}`);
-            throw e;
-        }
+        const response = await this.fetchWithTimeout(url, { ...options, headers }, `${method} ${path}`);
         this.log("info", `Response status: ${response.status}`);
         if (!response.ok) {
             const errorText = await response.text().catch(() => "Unknown error");
             this.log("verbose", `Response error body`, { body: errorText });
-            throw new Error(`Kanzen API Error (${response.status}): ${errorText}`);
+            throw new errors_js_1.KanzenApiError(`Kanzen API Error (${response.status}): ${errorText}`, {
+                status: response.status,
+                body: (0, errors_js_1.parseErrorBody)(errorText),
+            });
         }
         if (response.status === 204) {
             this.log("verbose", `Response body: (204 No Content)`);

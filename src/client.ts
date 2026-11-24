@@ -26,6 +26,7 @@ import {
   updateProject,
   getProject,
 } from "./features/projects.js";
+import { KanzenApiError, parseErrorBody } from "./errors.js";
 import { verifyWebhookSignature } from "./features/webhook.js";
 import { handleIncomingWebhook, handleIncomingWebhookRaw } from "./features/webhook_handler.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -129,6 +130,40 @@ export class KanzenClient {
   }
 
   /**
+   * fetch with the client timeout (`timeoutMs`, 30000 by default), combined with the caller's
+   * signal if any. A timeout or a network failure throws a KanzenApiError.
+   * @internal
+   */
+  async fetchWithTimeout(
+    url: string,
+    init: RequestInit,
+    label: string,
+  ): Promise<Response> {
+    const timeoutMs = this.options.timeoutMs ?? 30000;
+    const timeoutSignal = AbortSignal.timeout(timeoutMs);
+    const signal = init.signal
+      ? AbortSignal.any([init.signal, timeoutSignal])
+      : timeoutSignal;
+    try {
+      return await fetch(url, { ...init, signal });
+    } catch (e: any) {
+      this.log("info", `Request failed: ${label} - Error: ${e?.message}`);
+      if (timeoutSignal.aborted) {
+        throw new KanzenApiError(`Kanzen API timeout after ${timeoutMs} ms (${label})`, {
+          status: null,
+          code: "TIMEOUT",
+        });
+      }
+      // Aborted by the caller's own signal: not a network failure, pass it through
+      if (init.signal?.aborted) throw e;
+      throw new KanzenApiError(`Kanzen API network error (${label}): ${e?.message}`, {
+        status: null,
+        code: "NETWORK",
+      });
+    }
+  }
+
+  /**
    * Helper to make authenticated HTTP requests to Kanzen API
    * @internal
    */
@@ -153,23 +188,21 @@ export class KanzenClient {
     });
     this.log("trace", `Request body payload`, { body: options.body });
 
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        ...options,
-        headers,
-      });
-    } catch (e: any) {
-      this.log("info", `Request failed: ${method} ${path} - Error: ${e.message}`);
-      throw e;
-    }
+    const response = await this.fetchWithTimeout(
+      url,
+      { ...options, headers },
+      `${method} ${path}`,
+    );
 
     this.log("info", `Response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "Unknown error");
       this.log("verbose", `Response error body`, { body: errorText });
-      throw new Error(`Kanzen API Error (${response.status}): ${errorText}`);
+      throw new KanzenApiError(`Kanzen API Error (${response.status}): ${errorText}`, {
+        status: response.status,
+        body: parseErrorBody(errorText),
+      });
     }
 
     if (response.status === 204) {

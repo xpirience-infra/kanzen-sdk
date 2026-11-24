@@ -2,6 +2,8 @@ export type KanzenDebugLevel = 'none' | 'info' | 'verbose' | 'trace';
 export interface KanzenClientOptions {
     apiUrl: string;
     apiKey: string;
+    /** Request timeout in milliseconds (default 30000) */
+    timeoutMs?: number;
     webhookSecret?: string;
     debug?: boolean | KanzenDebugLevel;
     logger?: (level: 'info' | 'verbose' | 'trace', message: string, meta?: any) => void;
