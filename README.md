@@ -391,6 +391,43 @@ Errors, in the body of a `Kanzen API Error (422)`:
 
 ---
 
+## Outbound API — Account documents
+
+Files of the document folder (GED) of an account (client, group or site), with the rights of the API key's user on that account (upload needs the right to update it). The folder of a tenant's own company is never served (404), nor a file outside an account folder.
+
+```ts
+// Upload one or more files (Buffer or Blob), to a subfolder created on first use
+const documents = await kanzen.uploadAccountDocument(
+  account.id,
+  [
+    { content: pdfBuffer, filename: 'CR stratégique.pdf' },
+    { content: csvBuffer, filename: 'liste.csv' },
+  ],
+  { folder: 'Portail RFA' },
+)
+// documents: [{ id, name, folderId, folderName: 'Portail RFA', createdAt, size }, ...]
+
+// List the files of the account (all subfolders, newest first), or of one subfolder
+const all = await kanzen.listAccountDocuments(account.id)
+const portal = await kanzen.listAccountDocuments(account.id, { folder: 'Portail RFA' })
+
+// A download link valid 10 minutes, saved under the file's name: ask again, never store it
+const { url, name, expiresAt } = await kanzen.getDocumentUrl(documents[0].id)
+```
+
+Accepted types: `pdf`, `png`, `jpg`, `jpeg`, `doc`, `docx`, `xls`, `xlsx`, `ppt`, `pptx`, `odt`, `ods`, `csv`, `txt`. At most 10 files per upload, 20 MB in total per request.
+
+Large files: like every request, an upload stops after `timeoutMs` (30000 ms by default) and throws a `KanzenApiError` with `code: 'TIMEOUT'`. On a slow link, create the client with a higher `timeoutMs` for uploads (the file may still have been stored: list the folder before sending it again).
+
+| Status | Meaning |
+|--------|---------|
+| `422` | Type not accepted, no file, more than 10 files, a file over 20 MB, or a folder name with `/` or `\` |
+| `413` | Request over 20 MB |
+| `403` | The user may not update the account (upload) or is a portal contact |
+| `404` | Unknown account or document, the tenant's own company folder, or a Kanzen without these routes |
+
+---
+
 ## Outbound API — Projects
 
 Create projects with milestones and look up the reference data they need. The list methods read every page and return a plain array.
@@ -529,6 +566,11 @@ if (!isValid) {
 | `KanzenCreateSepaSigningRequestPayload` | `{ contactId, mandateIds }` |
 | `KanzenListSepaSigningRequestsFilter` | `{ accountId?, mandateId?, status? }` |
 | `KanzenSignedUrl` | `{ url }` short-lived download URL |
+| `KanzenUploadFile` | `{ content: Buffer \| Blob, filename }` file to upload |
+| `KanzenUploadAccountDocumentOptions` | `{ folder? }` subfolder of the upload |
+| `KanzenListAccountDocumentsOptions` | `{ folder? }` subfolder to list |
+| `KanzenAccountDocument` | `{ id, name, folderId, folderName, createdAt, size? }` file of an account |
+| `KanzenDocumentUrl` | `{ url, name, expiresAt }` 10-minute download link |
 | `KanzenOAuthConfigOptions` | OAuth helper configuration |
 | `KanzenDebugLevel` | `'none' \| 'info' \| 'verbose' \| 'trace'` |
 

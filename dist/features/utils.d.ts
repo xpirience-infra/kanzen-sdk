@@ -9,3 +9,7 @@ export declare function sanitizeApiUrl(url: string): string;
 export declare function unwrapList<T>(response: T[] | {
     data: T[];
 }): T[];
+/**
+ * The MIME type of a file from its extension (case ignored), `application/octet-stream` when unknown.
+ */
+export declare function mimeTypeFromFilename(filename: string): string;

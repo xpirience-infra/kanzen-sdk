@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getBetterAuthProviderConfig, getNextAuthProviderConfig } from "./features/auth.js";
-import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse, KanzenSepaMandate, KanzenCreateSepaMandatePayload, KanzenUpdateSepaMandatePayload, KanzenSepaSigningRequest, KanzenCreateSepaSigningRequestPayload, KanzenListSepaSigningRequestsFilter, KanzenSignedUrl, KanzenPaymentMethod, KanzenProjectStatus, KanzenProjectInvoicingType, KanzenProject, KanzenCreateProjectPayload, KanzenUpdateProjectPayload } from "./types.js";
+import type { KanzenClientOptions, KanzenAccountPayload, KanzenAccountResponse, KanzenLockPayload, KanzenLockResponse, KanzenContactPayload, KanzenContactResponse, KanzenSepaMandate, KanzenCreateSepaMandatePayload, KanzenUpdateSepaMandatePayload, KanzenSepaSigningRequest, KanzenCreateSepaSigningRequestPayload, KanzenListSepaSigningRequestsFilter, KanzenSignedUrl, KanzenUploadFile, KanzenUploadAccountDocumentOptions, KanzenListAccountDocumentsOptions, KanzenAccountDocument, KanzenDocumentUrl, KanzenPaymentMethod, KanzenProjectStatus, KanzenProjectInvoicingType, KanzenProject, KanzenCreateProjectPayload, KanzenUpdateProjectPayload } from "./types.js";
 export { getBetterAuthProviderConfig, getNextAuthProviderConfig };
 export declare class KanzenClient {
     private apiUrl;
@@ -123,6 +123,21 @@ export declare class KanzenClient {
      * Remove an account from the accounts a mandate covers (never the debtor account)
      */
     removeSepaMandateCoveredAccount(mandateId: string, accountId: string): Promise<KanzenSepaMandate>;
+    /**
+     * Upload one or more files to the document folder of an account (client, group or site),
+     * or to its subfolder `options.folder` (created on first use).
+     * Kanzen refuses (422) a file type outside its list, more than 10 files, or a file over 20 MB.
+     */
+    uploadAccountDocument(accountId: string, files: KanzenUploadFile | KanzenUploadFile[], options?: KanzenUploadAccountDocumentOptions): Promise<KanzenAccountDocument[]>;
+    /**
+     * List the files of the document folder of an account, newest first,
+     * or only those of its subfolder `options.folder`
+     */
+    listAccountDocuments(accountId: string, options?: KanzenListAccountDocumentsOptions): Promise<KanzenAccountDocument[]>;
+    /**
+     * Get a short-lived (10 minutes) download link of a document of an account
+     */
+    getDocumentUrl(documentId: string): Promise<KanzenDocumentUrl>;
     /**
      * Send one or more mandates to a contact for signature.
      * The contact gets one e-mail link to a Kanzen-hosted signing page.

@@ -7,6 +7,7 @@ const locks_js_1 = require("./features/locks.js");
 const contacts_js_1 = require("./features/contacts.js");
 const sepa_mandates_js_1 = require("./features/sepa_mandates.js");
 const sepa_signing_requests_js_1 = require("./features/sepa_signing_requests.js");
+const account_documents_js_1 = require("./features/account_documents.js");
 const projects_js_1 = require("./features/projects.js");
 const errors_js_1 = require("./errors.js");
 const webhook_js_1 = require("./features/webhook.js");
@@ -265,6 +266,27 @@ class KanzenClient {
      */
     async removeSepaMandateCoveredAccount(mandateId, accountId) {
         return (0, sepa_mandates_js_1.removeSepaMandateCoveredAccount)(this, mandateId, accountId);
+    }
+    /**
+     * Upload one or more files to the document folder of an account (client, group or site),
+     * or to its subfolder `options.folder` (created on first use).
+     * Kanzen refuses (422) a file type outside its list, more than 10 files, or a file over 20 MB.
+     */
+    async uploadAccountDocument(accountId, files, options) {
+        return (0, account_documents_js_1.uploadAccountDocument)(this, accountId, files, options);
+    }
+    /**
+     * List the files of the document folder of an account, newest first,
+     * or only those of its subfolder `options.folder`
+     */
+    async listAccountDocuments(accountId, options) {
+        return (0, account_documents_js_1.listAccountDocuments)(this, accountId, options);
+    }
+    /**
+     * Get a short-lived (10 minutes) download link of a document of an account
+     */
+    async getDocumentUrl(documentId) {
+        return (0, account_documents_js_1.getDocumentUrl)(this, documentId);
     }
     /**
      * Send one or more mandates to a contact for signature.
