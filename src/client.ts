@@ -19,6 +19,11 @@ import {
   cancelSepaSigningRequest,
 } from "./features/sepa_signing_requests.js";
 import {
+  uploadAccountDocument,
+  listAccountDocuments,
+  getDocumentUrl,
+} from "./features/account_documents.js";
+import {
   listPaymentMethods,
   listProjectStatuses,
   listProjectInvoicingTypes,
@@ -52,6 +57,11 @@ import type {
   KanzenCreateSepaSigningRequestPayload,
   KanzenListSepaSigningRequestsFilter,
   KanzenSignedUrl,
+  KanzenUploadFile,
+  KanzenUploadAccountDocumentOptions,
+  KanzenListAccountDocumentsOptions,
+  KanzenAccountDocument,
+  KanzenDocumentUrl,
   KanzenPaymentMethod,
   KanzenProjectStatus,
   KanzenProjectInvoicingType,
@@ -386,6 +396,37 @@ export class KanzenClient {
     accountId: string,
   ): Promise<KanzenSepaMandate> {
     return removeSepaMandateCoveredAccount(this, mandateId, accountId);
+  }
+
+  /**
+   * Upload one or more files to the document folder of an account (client, group or site),
+   * or to its subfolder `options.folder` (created on first use).
+   * Kanzen refuses (422) a file type outside its list, more than 10 files, or a file over 20 MB.
+   */
+  async uploadAccountDocument(
+    accountId: string,
+    files: KanzenUploadFile | KanzenUploadFile[],
+    options?: KanzenUploadAccountDocumentOptions,
+  ): Promise<KanzenAccountDocument[]> {
+    return uploadAccountDocument(this, accountId, files, options);
+  }
+
+  /**
+   * List the files of the document folder of an account, newest first,
+   * or only those of its subfolder `options.folder`
+   */
+  async listAccountDocuments(
+    accountId: string,
+    options?: KanzenListAccountDocumentsOptions,
+  ): Promise<KanzenAccountDocument[]> {
+    return listAccountDocuments(this, accountId, options);
+  }
+
+  /**
+   * Get a short-lived (10 minutes) download link of a document of an account
+   */
+  async getDocumentUrl(documentId: string): Promise<KanzenDocumentUrl> {
+    return getDocumentUrl(this, documentId);
   }
 
   /**

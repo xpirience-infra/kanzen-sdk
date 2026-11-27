@@ -307,6 +307,35 @@ export interface KanzenListSepaSigningRequestsFilter {
 export interface KanzenSignedUrl {
     url: string;
 }
+/** A file to upload: its bytes and the name it keeps in Kanzen (its extension gives its type) */
+export interface KanzenUploadFile {
+    content: Buffer | Blob;
+    filename: string;
+}
+export interface KanzenUploadAccountDocumentOptions {
+    /** A subfolder of the account folder, created on first use (one level: no slash nor backslash) */
+    folder?: string;
+}
+export interface KanzenListAccountDocumentsOptions {
+    /** Only the files of this subfolder of the account folder */
+    folder?: string;
+}
+/** A file of the document folder (GED) of an account */
+export interface KanzenAccountDocument {
+    id: string;
+    name: string;
+    folderId: string;
+    folderName: string | null;
+    createdAt: string;
+    /** In bytes, only in the answer of an upload */
+    size?: number;
+}
+/** A short-lived download link of a document (10 minutes): never store it, ask again */
+export interface KanzenDocumentUrl {
+    url: string;
+    name: string;
+    expiresAt: string;
+}
 export interface KanzenPaymentMethod {
     id: string;
     name: string;

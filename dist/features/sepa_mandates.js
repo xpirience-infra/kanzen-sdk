@@ -8,16 +8,7 @@ exports.getSignedSepaMandateUrl = getSignedSepaMandateUrl;
 exports.updateSepaMandate = updateSepaMandate;
 exports.addSepaMandateCoveredAccounts = addSepaMandateCoveredAccounts;
 exports.removeSepaMandateCoveredAccount = removeSepaMandateCoveredAccount;
-const MIME_BY_EXTENSION = {
-    pdf: "application/pdf",
-    png: "image/png",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-};
-function mimeTypeFromFilename(filename) {
-    const extension = filename.split(".").pop()?.toLowerCase() ?? "";
-    return MIME_BY_EXTENSION[extension] ?? "application/octet-stream";
-}
+const utils_js_1 = require("./utils.js");
 /**
  * List the SEPA mandates of an account
  */
@@ -45,7 +36,7 @@ async function getSepaMandatePdfUrl(client, mandateId) {
 async function uploadSignedSepaMandate(client, mandateId, file, filename, externalActor) {
     const blob = file instanceof Blob
         ? file
-        : new Blob([new Uint8Array(file)], { type: mimeTypeFromFilename(filename) });
+        : new Blob([new Uint8Array(file)], { type: (0, utils_js_1.mimeTypeFromFilename)(filename) });
     const form = new FormData();
     form.append("file", blob, filename);
     if (externalActor !== undefined) {

@@ -5,18 +5,7 @@ import type {
   KanzenUpdateSepaMandatePayload,
   KanzenSignedUrl,
 } from "../types.js";
-
-const MIME_BY_EXTENSION: Record<string, string> = {
-  pdf: "application/pdf",
-  png: "image/png",
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-};
-
-function mimeTypeFromFilename(filename: string): string {
-  const extension = filename.split(".").pop()?.toLowerCase() ?? "";
-  return MIME_BY_EXTENSION[extension] ?? "application/octet-stream";
-}
+import { mimeTypeFromFilename } from "./utils.js";
 
 /**
  * List the SEPA mandates of an account
